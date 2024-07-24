@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.21)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_PARALLEL_LEVEL 6)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_GENERATOR_PLATFORM x64)
 
 project(VulkanPlayground)
-
-set(CMAKE_CXX_STANDARD 23)
 
 file(GLOB H_SOURCES "src/*.h")
 file(GLOB CPP_SOURCES "src/*.cpp")
@@ -56,9 +56,11 @@ add_subdirectory(libraries/vk-bootstrap)
 
 add_subdirectory(libraries/spdlog)
 
+add_subdirectory(libraries/VMA)
+
 find_package(Vulkan REQUIRED)
 
-target_link_libraries(VulkanPlayground glm glfw vk-bootstrap spdlog::spdlog ${Vulkan_LIBRARIES})
+target_link_libraries(VulkanPlayground glm glfw vk-bootstrap spdlog::spdlog GPUOpen::VulkanMemoryAllocator ${Vulkan_LIBRARIES})
 
 include_directories(${Vulkan_INCLUDE_DIR} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCES} ${SUBFOLDER_H_SOURCES} ${SUBFOLDER_C_SOURCES} ${SUBFOLDER_CPP_SOURCES})
 

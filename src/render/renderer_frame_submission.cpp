@@ -1,0 +1,78 @@
+#include "renderer.h"
+
+#include <VkBootstrap.h>
+#include <spdlog/spdlog.h>
+#include <stdint.h>
+
+#include "../utils.h"
+#include "render_utils.h"
+#include "vk_helpers.h"
+
+#define VK_TIMEOUT 10000000u
+
+void Render::sInstance::start_frame_capture() {
+    sFrame &current_frame = get_current_frame();
+    // Wait until the last frame has finished rendering, and reset the fence
+    vkWaitForFences(gpu_instance.device, 
+                    1u, 
+                    &current_frame.render_fence, 
+                    true, 
+                    VK_TIMEOUT);
+
+    vkResetFences(  gpu_instance.device, 
+                    1u, 
+                    &current_frame.render_fence );
+
+    // Get the current swapchain
+    vk_assert_msg(vkAcquireNextImageKHR(gpu_instance.device, 
+                                        swapchain_data.swapchain, 
+                                        VK_TIMEOUT, 
+                                        current_frame.swapchain_semaphore, 
+                                        nullptr, 
+                                        &current_frame.current_swapchain_index),
+                "Error adquiring swapchain image");
+
+    // Begin the command recording
+    // Clean the cmd buffer of the last frame
+    vk_assert_msg(  vkResetCommandBuffer(current_frame.cmd_buffer, 0u), 
+                    "Error reseting the command buffer");
+    // TODO: Might need to return this flag, if we are in VR (reuse the comand buffer for each eye)
+    VkCommandBufferBeginInfo cmd_begin = VK_Helpers::create_cmd_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+    vk_assert_msg(  vkBeginCommandBuffer(current_frame.cmd_buffer, &cmd_begin), 
+                    "Error initializing the command buffer");
+
+    const uint32_t swapchain_idx = current_frame.current_swapchain_index;
+
+    // Set the swapchain into general mode
+    // TODO: check other iamge layouts, more effectives for rendering
+    VK_Helpers::transition_image_layout(current_frame.cmd_buffer, 
+                                        swapchain_data.images[swapchain_idx], 
+                                        VK_IMAGE_LAYOUT_UNDEFINED, 
+                                        VK_IMAGE_LAYOUT_GENERAL);
+    
+    const VkImageSubresourceRange clear_range = VK_Helpers::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
+    const VkClearColorValue clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
+
+    vkCmdClearColorImage(   current_frame.cmd_buffer, 
+                            swapchain_data.images[swapchain_idx],
+                            VK_IMAGE_LAYOUT_GENERAL, 
+                            &clear_color, 
+                            1u, 
+                            &clear_range);
+
+
+}
+
+void Render::sInstance::end_frame_capture() {
+    sFrame &current_frame = get_current_frame();
+
+    // Transformt the swapchain to renderable
+    VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
+                                        swapchain_data.images[current_frame.current_swapchain_index], 
+                                        VK_IMAGE_LAYOUT_GENERAL, 
+                                        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    
+    vk_assert_msg(  vkEndCommandBuffer(current_frame.cmd_buffer), 
+                    "Error closing the command buffer");
+}

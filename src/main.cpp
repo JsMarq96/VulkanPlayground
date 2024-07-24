@@ -1,24 +1,22 @@
 #include <spdlog/spdlog.h>
+#include <GLFW/glfw3.h>
 
-#include "renderer.h"
+#include "common.h"
 #include "utils.h"
+
+#include "render/renderer.h"
 
 int main() {
     spdlog::info("Test");
 
-    Renderer::sInstance instance;
-    Renderer::sRenderData render;
+    Render::sInstance renderer;
+    bool success = renderer.init();
 
-    Renderer::init_graphics_instance(&instance);
-
-    Renderer::init_render(&render, instance);
-
-    while(!glfwWindowShouldClose(instance.window)) {
+    while(!glfwWindowShouldClose(renderer.gpu_instance.window)) {
         glfwPollEvents();
-        Renderer::render_a_frame(render, instance);
     }
 
-    vkDeviceWaitIdle(instance.device);
+    renderer.clean();
 
     return 0;
 }
