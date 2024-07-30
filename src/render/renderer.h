@@ -23,7 +23,7 @@ namespace Render {
     };
 
     // https://vkguide.dev/docs/new_chapter_1/vulkan_mainloop_code/
-    // VkSemaphoreSubmitInfo vkinit::semaphore_submit_info(VkPipelineStageFlags2 stageMask, VkSemaphore semaphore)
+    // 	VK_CHECK(vkQueueSubmit2(_graphicsQueue, 1, &submit, get_current_frame()._renderFence));
 
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;

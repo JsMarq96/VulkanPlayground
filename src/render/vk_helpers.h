@@ -11,13 +11,15 @@ namespace VK_Helpers {
     // Cmd buffer
     VkCommandBufferAllocateInfo create_cmd_buffer_alloc_info(const VkCommandPool pool, const uint32_t count);
     VkCommandBufferBeginInfo create_cmd_buffer_begin_info(const VkCommandBufferUsageFlags flags = 0u);
+    VkCommandBufferSubmitInfo  create_cmd_buffer_submit_info(const VkCommandBuffer &cmd);
+    VkSubmitInfo2 create_cmd_submit(const VkCommandBufferSubmitInfo *cmd, const VkSemaphoreSubmitInfo *signal_semaphore_info, const VkSemaphoreSubmitInfo *wait_semphore_info);
 
     // Fences
     VkFenceCreateInfo create_fence_info(const VkFenceCreateFlags flags = 0u);
 
     // Semaphores
     VkSemaphoreCreateInfo create_semaphore_info(const VkSemaphoreCreateFlags flags = 0u);
-    VkSemaphoreSubmitInfo submit_semphore_info(const VkPipelineStageFlags2 stage_mask, const VkSemaphore semaphore);
+    VkSemaphoreSubmitInfo create_submit_semphore_info(const VkPipelineStageFlags2 stage_mask, const VkSemaphore semaphore);
 
     // Images
     void transition_image_layout(const VkCommandBuffer cmd, const VkImage image, const VkImageLayout current_layout, const VkImageLayout new_layout);

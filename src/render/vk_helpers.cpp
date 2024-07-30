@@ -30,6 +30,15 @@ VkCommandBufferBeginInfo VK_Helpers::create_cmd_buffer_begin_info(const VkComman
     };
 }
 
+VkCommandBufferSubmitInfo  create_cmd_buffer_submit_info(const VkCommandBuffer &cmd) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+        .pNext = nullptr,
+        .commandBuffer = cmd,
+        .deviceMask = 0u
+    };
+}
+
 VkFenceCreateInfo VK_Helpers::create_fence_info( const VkFenceCreateFlags flags ) {
     return {
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
@@ -46,7 +55,7 @@ VkSemaphoreCreateInfo VK_Helpers::create_semaphore_info( const VkSemaphoreCreate
     };
 }
 
-VkSemaphoreSubmitInfo VK_Helpers::submit_semphore_info(const VkPipelineStageFlags2 stage_mask, const VkSemaphore semaphore) {
+VkSemaphoreSubmitInfo VK_Helpers::create_submit_semphore_info(const VkPipelineStageFlags2 stage_mask, const VkSemaphore semaphore) {
     return {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
         .pNext = nullptr,
@@ -54,6 +63,24 @@ VkSemaphoreSubmitInfo VK_Helpers::submit_semphore_info(const VkPipelineStageFlag
         .value = 1u, // To send the semaphore
         .stageMask = stage_mask,
         .deviceIndex = 0u
+    };
+}
+
+VkSubmitInfo2 create_cmd_submit(    const VkCommandBufferSubmitInfo *cmd, 
+                                    const VkSemaphoreSubmitInfo *signal_semaphore_info, 
+                                    const VkSemaphoreSubmitInfo *wait_semphore_info) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+        .pNext = nullptr,
+        
+        .waitSemaphoreInfoCount = (wait_semphore_info == nullptr) ? 0u : 1u,
+        .pWaitSemaphoreInfos = wait_semphore_info,
+
+        .commandBufferInfoCount = 1u,
+        .pCommandBufferInfos = cmd,
+
+        .signalSemaphoreInfoCount = (signal_semaphore_info == nullptr) ? 0u : 1u,
+        .pSignalSemaphoreInfos = signal_semaphore_info
     };
 }
 

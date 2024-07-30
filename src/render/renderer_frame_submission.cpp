@@ -75,4 +75,22 @@ void Render::sInstance::end_frame_capture() {
     
     vk_assert_msg(  vkEndCommandBuffer(current_frame.cmd_buffer), 
                     "Error closing the command buffer");
+
+    // Prepare submission
+    VkCommandBufferSubmitInfo cmd_info = VK_Helpers::create_cmd_buffer_submit_info(current_frame.cmd_buffer);
+    VkSemaphoreSubmitInfo wait_info = VK_Helpers::create_submit_semphore_info(  VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, 
+                                                                                current_frame.swapchain_semaphore);
+    VkSemaphoreSubmitInfo signal_info = VK_Helpers::create_submit_semphore_info(    VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, 
+                                                                                    current_frame.render_semaphore);
+    VkSubmitInfo2 submit = VK_Helpers::create_cmd_submit(   &cmd_info, 
+                                                            &signal_info, 
+                                                            &wait_info  );
+
+    vk_assert_msg(  vkQueueSubmit2( gpu_instance.graphic_queue.queue, 
+                                    1u, 
+                                    &submit, 
+                                    current_frame.render_fence  ), 
+                    "Error Submiting de command buffer" );
+
+    // Present frame
 }
