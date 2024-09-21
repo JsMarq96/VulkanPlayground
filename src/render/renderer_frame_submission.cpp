@@ -23,6 +23,8 @@ void Render::sBackend::start_frame_capture() {
                     1u, 
                     &current_frame.render_fence );
 
+    // Delete from prev frame
+
     // Get the current swapchain
     vk_assert_msg(vkAcquireNextImageKHR(gpu_instance.device, 
                                         swapchain_data.swapchain, 
@@ -60,9 +62,8 @@ void Render::sBackend::start_frame_capture() {
                             &clear_color, 
                             1u, 
                             &clear_range);
-
-
 }
+
 
 void Render::sBackend::end_frame_capture() {
     sFrame &current_frame = get_current_frame();

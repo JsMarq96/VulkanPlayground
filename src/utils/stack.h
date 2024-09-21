@@ -3,7 +3,7 @@
 #include <cstdint>
 
 /**
- * First implementation of a Stack
+ * First implementation of a FILO Stack
  * the storage is maanged in differnt arenas, to avoid multiple allocs and deallocs
  * in a single frame.
  * Kinda naive, only dealloc stacks on a diffence of more than 1 from the current pointer
@@ -28,11 +28,19 @@ struct sStack {
         arena_lists[arena_count-1u] = (sTinyStack*) malloc(sizeof(sTinyStack));
     }
 
-    uint32_t size() const {
+    void clean() {
+        for(uint32_t i = 0u; i < stack_count; i++) {
+            free(stack_lists[i]);
+        }
+
+        free(stack_lists);
+    };
+
+    inline uint32_t size() const {
         return curr_stack_pointer * N + top_pointer;
     }
 
-    void push(const T& to_add) {
+    inline void push(const T& to_add) {
         if (ARENA_SIZE >= top_pointer) {
             // Add new tiny stack
             stack_count++;
@@ -49,12 +57,16 @@ struct sStack {
         stack_lists[curr_stack_pointer][id_to_push] = to_add;
     }
 
-    T pop() {
+    inline T& peek() {
+        return stack_lists[curr_stack_pointer][top_pointer];
+    };
+
+    inline T pop() {
         T& curr_top = stack_lists[curr_stack_pointer][top_pointer];
 
         if (top_pointer == 0u) {
-            top_pointer = ARENA_SIZE;
             if (curr_stack_pointer > 0) {
+                top_pointer = ARENA_SIZE;
                 curr_stack_pointer--;
 
                 // Only keep one mini stack as a margin

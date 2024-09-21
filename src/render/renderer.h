@@ -1,6 +1,9 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vk_mem_alloc.h>
+
+#include "resources.h"
 
 #define FRAME_BUFFER_COUNT 3u
 
@@ -26,8 +29,8 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_1/vulkan_mainloop_code/
-    // 	VK_CHECK(vkQueueSubmit2(_graphicsQueue, 1, &submit, get_current_frame()._renderFence));
+    // https://vkguide.dev/docs/new_chapter_2/vulkan_new_rendering/
+    // 	We begin by creating a VkExtent3d structure with the size of the image we want, which will match our window size. We copy it into the AllocatedImage
 
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;
@@ -42,6 +45,8 @@ namespace Render {
     struct sBackend {
         sDeviceInstance     gpu_instance = {};
 
+        VmaAllocator        vk_allocator;
+
         uint64_t            frame_number = 0u;
         sFrame              in_flight_frames[FRAME_BUFFER_COUNT];
 
@@ -53,8 +58,13 @@ namespace Render {
             VkImageView     image_views[FRAME_BUFFER_COUNT];
         } swapchain_data;
 
+        sImage              draw_image;
+        VkExtent2D          draw_extent;
+
         bool create_swapchain(const uint32_t width, const uint32_t height, const VkFormat format, sSwapchainData &swapchain_data);
         void destroy_swapchain(sSwapchainData &swapchain_data);
+
+        sImage create_image(const VkFormat img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
 
         inline sFrame& get_current_frame() { 
             return in_flight_frames[frame_number % FRAME_BUFFER_COUNT]; 

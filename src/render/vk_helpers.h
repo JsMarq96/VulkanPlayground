@@ -24,4 +24,6 @@ namespace VK_Helpers {
     // Images
     void transition_image_layout(const VkCommandBuffer cmd, const VkImage image, const VkImageLayout current_layout, const VkImageLayout new_layout);
     VkImageSubresourceRange image_subresource_range(const VkImageAspectFlags aspect_flags = 0u);
+    VkImageCreateInfo image2D_create_info(const VkFormat format, const VkImageUsageFlags usage_flags, const VkExtent3D extent, const bool use_on_CPU = false);
+    VkImageViewCreateInfo image_view2D_create_info(const VkFormat format, const VkImage &image, const VkImageAspectFlags &aspect_flags);
 }

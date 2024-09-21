@@ -133,3 +133,40 @@ VkImageSubresourceRange VK_Helpers::image_subresource_range( const VkImageAspect
         .layerCount = VK_REMAINING_ARRAY_LAYERS
     };
 }
+
+VkImageCreateInfo VK_Helpers::image2D_create_info(  const VkFormat format, 
+                                                    const VkImageUsageFlags usage_flags, 
+                                                    const VkExtent3D extent, 
+                                                    const bool use_on_CPU) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = format,
+        .extent = extent,
+        .mipLevels = 1u,
+        .arrayLayers = 1u,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = (use_on_CPU) ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL, // best fomat, if we read from CPU is liner
+        .usage = usage_flags
+    };
+}
+
+VkImageViewCreateInfo VK_Helpers::image_view2D_create_info( const VkFormat format, 
+                                                            const VkImage &image, 
+                                                            const VkImageAspectFlags &aspect_flags) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .pNext = nullptr,
+        .image = image,
+        .viewType = VK_IMAGE_VIEW_TYPE_2D,
+        .format = format,
+        .subresourceRange = {
+            .aspectMask = aspect_flags,
+            .baseMipLevel = 0u,
+            .levelCount = 1u,
+            .baseArrayLayer = 0u,
+            .layerCount = 1u
+        }
+    };
+}

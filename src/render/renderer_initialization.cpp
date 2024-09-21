@@ -14,6 +14,7 @@ bool initialize_vulkan(Render::sDeviceInstance &instance);
 bool initialize_swapchain(Render::sBackend &instance);
 bool initialize_command_buffers(Render::sBackend &instance);
 bool initialize_sync_structs(Render::sBackend &instance);
+bool initialize_memory_alloc(Render::sBackend &instance);
 
 bool Render::sBackend::init() {
     bool is_initialized = true;
@@ -23,6 +24,7 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_swapchain(*this);
     is_initialized &= initialize_command_buffers(*this);
     is_initialized &= initialize_sync_structs(*this);
+    is_initialized &= initialize_memory_alloc(*this);
 
     return is_initialized;
 }
@@ -126,10 +128,34 @@ bool initialize_vulkan(Render::sDeviceInstance &instance) {
 }
 
 bool initialize_swapchain(Render::sBackend &instance) {
-    return instance.create_swapchain(WIN_WIDTH, 
-                                     WIN_HEIGHT, 
-                                     VK_FORMAT_B8G8R8A8_UNORM,
-                                     instance.swapchain_data);
+    bool swapchain_success =  instance.create_swapchain(WIN_WIDTH, 
+                                                        WIN_HEIGHT, 
+                                                        VK_FORMAT_B8G8R8A8_UNORM,
+                                                        instance.swapchain_data);
+    if (!swapchain_success) {
+        return false;
+    }
+
+    VkExtent3D draw_image_extent = {
+        instance.swapchain_data.extent.width, 
+        instance.swapchain_data.extent.height, 
+        1u
+    };
+
+    instance.draw_image.image_format = VK_FORMAT_R16G16B16_SFLOAT;
+    instance.draw_image.image_extent = draw_image_extent;
+
+    VkImageUsageFlags image_usages;
+    image_usages = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    image_usages |= VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    image_usages |= VK_IMAGE_USAGE_STORAGE_BIT;
+    image_usages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    VkImageCreateInfo img_create_info = VK_Helpers::image2D_create_info(VK_FORMAT_R16G16B16_SFLOAT, 
+                                                                        image_usages, 
+                                                                        draw_image_extent);
+
+    return true;
 }
 
 bool initialize_command_buffers(Render::sBackend &instance) {
@@ -199,3 +225,19 @@ bool initialize_sync_structs(Render::sBackend &instance) {
     }
     return true;
 }
+
+bool initialize_memory_alloc(Render::sBackend &instance) {
+    VmaAllocatorCreateInfo alloc_create_info = {
+        .flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT,
+        .physicalDevice = instance.gpu_instance.gpu,
+        .device = instance.gpu_instance.device,
+        .instance = instance.gpu_instance.instance
+    };
+
+    vmaCreateAllocator( &alloc_create_info, 
+                        &instance.vk_allocator);
+
+    // TODO: push destroy?
+
+    return true;
+};

@@ -1,6 +1,9 @@
 #include <spdlog/spdlog.h>
 #include <GLFW/glfw3.h>
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+
 #include "common.h"
 #include "utils.h"
 
