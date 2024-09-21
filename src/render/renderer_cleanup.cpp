@@ -2,7 +2,15 @@
 
 #include <VkBootstrap.h>
 
-void Render::sInstance::clean() {
+void Render::sBackend::clean() {
+    for(uint32_t i = 0u; i < FRAME_BUFFER_COUNT; i++) {
+        vkDestroyCommandPool(gpu_instance.device, in_flight_frames[i].cmd_pool, nullptr);
+
+        vkDestroyFence(gpu_instance.device, in_flight_frames[i].render_fence, nullptr);
+        vkDestroySemaphore(gpu_instance.device, in_flight_frames[i].render_semaphore, nullptr);
+        vkDestroySemaphore(gpu_instance.device, in_flight_frames[i].swapchain_semaphore, nullptr);
+    }
+
     destroy_swapchain(swapchain_data);
 
     vkDestroySurfaceKHR(gpu_instance.instance, gpu_instance.surface, nullptr);
@@ -14,8 +22,4 @@ void Render::sInstance::clean() {
     // TODO destroy window
 
     vkDeviceWaitIdle(gpu_instance.device);
-    
-    for(uint32_t i = 0u; i < FRAME_BUFFER_COUNT; i++) {
-        vkDestroyCommandPool(gpu_instance.device, in_flight_frames[i].cmd_pool, nullptr);
-    }
 }

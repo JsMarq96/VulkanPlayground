@@ -11,8 +11,12 @@ namespace Render {
     struct sFrame {
         VkCommandPool       cmd_pool;
         VkCommandBuffer     cmd_buffer;
+        // For signaling that the swapchain is being used
         VkSemaphore         swapchain_semaphore;
+        // For signaling that the render has finished
         VkSemaphore         render_semaphore;
+
+        // Wait for waiting until the prev frame is finished
         VkFence             render_fence;
         uint32_t            current_swapchain_index = 0u;
     };
@@ -35,10 +39,10 @@ namespace Render {
         sQueueData                  graphic_queue;
     };
 
-    struct sInstance {
+    struct sBackend {
         sDeviceInstance     gpu_instance = {};
 
-        uint32_t            frame_number = 0u;
+        uint64_t            frame_number = 0u;
         sFrame              in_flight_frames[FRAME_BUFFER_COUNT];
 
         struct sSwapchainData {

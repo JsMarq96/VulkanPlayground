@@ -10,7 +10,7 @@
 
 #define VK_TIMEOUT 10000000u
 
-void Render::sInstance::start_frame_capture() {
+void Render::sBackend::start_frame_capture() {
     sFrame &current_frame = get_current_frame();
     // Wait until the last frame has finished rendering, and reset the fence
     vkWaitForFences(gpu_instance.device, 
@@ -64,7 +64,7 @@ void Render::sInstance::start_frame_capture() {
 
 }
 
-void Render::sInstance::end_frame_capture() {
+void Render::sBackend::end_frame_capture() {
     sFrame &current_frame = get_current_frame();
 
     // Transformt the swapchain to renderable
@@ -93,4 +93,19 @@ void Render::sInstance::end_frame_capture() {
                     "Error Submiting de command buffer" );
 
     // Present frame
+    VkPresentInfoKHR present_info = {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 1u,
+        .pWaitSemaphores = &current_frame.render_semaphore,
+        .swapchainCount = 1u,
+        .pSwapchains = &swapchain_data.swapchain,
+        .pImageIndices = &current_frame.current_swapchain_index
+    };
+
+    vk_assert_msg( vkQueuePresentKHR(   gpu_instance.graphic_queue.queue, 
+                                        &present_info), 
+                    "Error presenting the swapchain");
+
+    frame_number++;
 }

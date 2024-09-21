@@ -11,11 +11,11 @@
 
 bool intialize_window(Render::sDeviceInstance &instance);
 bool initialize_vulkan(Render::sDeviceInstance &instance);
-bool initialize_swapchain(Render::sInstance &instance);
-bool initialize_command_buffers(Render::sInstance &instance);
-bool initialize_sync_structs(Render::sInstance &instance);
+bool initialize_swapchain(Render::sBackend &instance);
+bool initialize_command_buffers(Render::sBackend &instance);
+bool initialize_sync_structs(Render::sBackend &instance);
 
-bool Render::sInstance::init() {
+bool Render::sBackend::init() {
     bool is_initialized = true;
 
     is_initialized &= intialize_window(gpu_instance);
@@ -125,14 +125,14 @@ bool initialize_vulkan(Render::sDeviceInstance &instance) {
     return true;
 }
 
-bool initialize_swapchain(Render::sInstance &instance) {
+bool initialize_swapchain(Render::sBackend &instance) {
     return instance.create_swapchain(WIN_WIDTH, 
                                      WIN_HEIGHT, 
                                      VK_FORMAT_B8G8R8A8_UNORM,
                                      instance.swapchain_data);
 }
 
-bool initialize_command_buffers(Render::sInstance &instance) {
+bool initialize_command_buffers(Render::sBackend &instance) {
     // Create comon command pool
     VkCommandPoolCreateInfo command_pool_create_info = VK_Helpers::create_cmd_pool_info(    instance.gpu_instance.graphic_queue.family, 
                                                                                             VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
@@ -165,7 +165,7 @@ bool initialize_command_buffers(Render::sInstance &instance) {
     return true;
 }
 
-bool initialize_sync_structs(Render::sInstance &instance) {
+bool initialize_sync_structs(Render::sBackend &instance) {
     // Start fence as signaled
     VkFenceCreateInfo fence_Create_info = VK_Helpers::create_fence_info(VK_FENCE_CREATE_SIGNALED_BIT);
     VkSemaphoreCreateInfo sempahore_create_info = VK_Helpers::create_semaphore_info();

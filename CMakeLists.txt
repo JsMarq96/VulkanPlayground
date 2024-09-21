@@ -64,6 +64,16 @@ target_link_libraries(VulkanPlayground glm glfw vk-bootstrap spdlog::spdlog GPUO
 
 include_directories(${Vulkan_INCLUDE_DIR} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCES} ${SUBFOLDER_H_SOURCES} ${SUBFOLDER_C_SOURCES} ${SUBFOLDER_CPP_SOURCES})
 
+# Custom commands
+
+# Copy resources
 add_custom_command(TARGET VulkanPlayground POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                        ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:VulkanPlayground>/resources)
+
+
+# Parallel build
+add_custom_target(my_parallel_build 
+                      COMMAND ${CMAKE_COMMAND} --build -j ${CMAKE_BUILD_PARALLEL_LEVEL}
+                      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                      COMMENT "My parallel build with 5 cores")

@@ -6,10 +6,10 @@
 
 #include "../utils.h"
 
-bool Render::sInstance::create_swapchain(   const uint32_t width, 
+bool Render::sBackend::create_swapchain(   const uint32_t width, 
                                             const uint32_t height, 
                                             const VkFormat format, 
-                                            sInstance::sSwapchainData &swapchain_data) {
+                                            sBackend::sSwapchainData &swapchain_data) {
     swapchain_data.format = format;
 
     vkb::SwapchainBuilder swapchain_builder {
@@ -53,7 +53,7 @@ bool Render::sInstance::create_swapchain(   const uint32_t width,
     return true;
 }
 
-void Render::sInstance::destroy_swapchain(sInstance::sSwapchainData &swapchain_data) {
+void Render::sBackend::destroy_swapchain(sBackend::sSwapchainData &swapchain_data) {
     vkDestroySwapchainKHR(gpu_instance.device, swapchain_data.swapchain, nullptr);
 
     for(uint32_t i = 0u; i < FRAME_BUFFER_COUNT; i++) {

@@ -30,7 +30,7 @@ VkCommandBufferBeginInfo VK_Helpers::create_cmd_buffer_begin_info(const VkComman
     };
 }
 
-VkCommandBufferSubmitInfo  create_cmd_buffer_submit_info(const VkCommandBuffer &cmd) {
+VkCommandBufferSubmitInfo  VK_Helpers::create_cmd_buffer_submit_info(const VkCommandBuffer &cmd) {
     return {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
         .pNext = nullptr,
@@ -66,9 +66,9 @@ VkSemaphoreSubmitInfo VK_Helpers::create_submit_semphore_info(const VkPipelineSt
     };
 }
 
-VkSubmitInfo2 create_cmd_submit(    const VkCommandBufferSubmitInfo *cmd, 
-                                    const VkSemaphoreSubmitInfo *signal_semaphore_info, 
-                                    const VkSemaphoreSubmitInfo *wait_semphore_info) {
+VkSubmitInfo2 VK_Helpers::create_cmd_submit(    const VkCommandBufferSubmitInfo *cmd, 
+                                                const VkSemaphoreSubmitInfo *signal_semaphore_info, 
+                                                const VkSemaphoreSubmitInfo *wait_semphore_info) {
     return {
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
         .pNext = nullptr,
