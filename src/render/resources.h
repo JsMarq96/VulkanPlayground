@@ -7,6 +7,6 @@ struct sImage {
     VkImage         image;
     VkImageView     image_view;
     VmaAllocation   alloc;
-    VkExtent3D      image_extent;
-    VkFormat        image_format;
+    VkExtent3D      extent;
+    VkFormat        format;
 };

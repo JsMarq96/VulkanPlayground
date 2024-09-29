@@ -53,25 +53,40 @@ void Render::sBackend::start_frame_capture() {
                                         VK_IMAGE_LAYOUT_UNDEFINED, 
                                         VK_IMAGE_LAYOUT_GENERAL);
     
-    const VkImageSubresourceRange clear_range = VK_Helpers::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
-    const VkClearColorValue clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
+    // const VkImageSubresourceRange clear_range = VK_Helpers::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
+    // const VkClearColorValue clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
 
-    vkCmdClearColorImage(   current_frame.cmd_buffer, 
-                            swapchain_data.images[swapchain_idx],
-                            VK_IMAGE_LAYOUT_GENERAL, 
-                            &clear_color, 
-                            1u, 
-                            &clear_range);
+    // vkCmdClearColorImage(   current_frame.cmd_buffer, 
+    //                         swapchain_data.images[swapchain_idx],
+    //                         VK_IMAGE_LAYOUT_GENERAL, 
+    //                         &clear_color, 
+    //                         1u, 
+    //                         &clear_range);
 }
 
 
 void Render::sBackend::end_frame_capture() {
     sFrame &current_frame = get_current_frame();
 
+    VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
+                                        draw_image.image, 
+                                        VK_IMAGE_LAYOUT_GENERAL, 
+                                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
+                                        swapchain_data.images[current_frame.current_swapchain_index], 
+                                        VK_IMAGE_LAYOUT_UNDEFINED, 
+                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+    VK_Helpers::copy_image_image(   current_frame.cmd_buffer, 
+                                    draw_image.image, 
+                                    { draw_image.extent.width, draw_image.extent.height, 1 }, 
+                                    swapchain_data.images[current_frame.current_swapchain_index], 
+                                    { swapchain_data.extent.width, swapchain_data.extent.height, 1 });
+
     // Transformt the swapchain to renderable
     VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
                                         swapchain_data.images[current_frame.current_swapchain_index], 
-                                        VK_IMAGE_LAYOUT_GENERAL, 
+                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
                                         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     
     vk_assert_msg(  vkEndCommandBuffer(current_frame.cmd_buffer), 

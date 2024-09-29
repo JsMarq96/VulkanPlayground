@@ -21,10 +21,10 @@ bool Render::sBackend::init() {
 
     is_initialized &= intialize_window(gpu_instance);
     is_initialized &= initialize_vulkan(gpu_instance);
-    is_initialized &= initialize_swapchain(*this);
+    is_initialized &= initialize_memory_alloc(*this);
     is_initialized &= initialize_command_buffers(*this);
     is_initialized &= initialize_sync_structs(*this);
-    is_initialized &= initialize_memory_alloc(*this);
+    is_initialized &= initialize_swapchain(*this);
 
     return is_initialized;
 }
@@ -47,6 +47,7 @@ bool initialize_vulkan(Render::sDeviceInstance &instance) {
         vkb::Result<vkb::Instance> result =  builder
                                                 .set_app_name(WIN_NAME)
                                                 .use_default_debug_messenger()
+                                                .request_validation_layers(true)
                                                 .require_api_version(1u, 3u, 0u)
                                                 .build();
 
@@ -136,24 +137,22 @@ bool initialize_swapchain(Render::sBackend &instance) {
         return false;
     }
 
-    VkExtent3D draw_image_extent = {
-        instance.swapchain_data.extent.width, 
-        instance.swapchain_data.extent.height, 
-        1u
-    };
-
-    instance.draw_image.image_format = VK_FORMAT_R16G16B16_SFLOAT;
-    instance.draw_image.image_extent = draw_image_extent;
-
     VkImageUsageFlags image_usages;
     image_usages = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     image_usages |= VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     image_usages |= VK_IMAGE_USAGE_STORAGE_BIT;
     image_usages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    VkImageCreateInfo img_create_info = VK_Helpers::image2D_create_info(VK_FORMAT_R16G16B16_SFLOAT, 
-                                                                        image_usages, 
-                                                                        draw_image_extent);
+    VkExtent3D draw_image_extent = {
+        instance.swapchain_data.extent.width, 
+        instance.swapchain_data.extent.height, 
+        1u
+    };
+
+    instance.draw_image = instance.create_image(VK_FORMAT_R16G16B16_SFLOAT,
+                                                image_usages, 
+                                                VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 
+                                                draw_image_extent);
 
     return true;
 }

@@ -29,8 +29,7 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_2/vulkan_new_rendering/
-    // 	We begin by creating a VkExtent3d structure with the size of the image we want, which will match our window size. We copy it into the AllocatedImage
+    // https://vkguide.dev/docs/new_chapter_2/vulkan_shader_drawing/
 
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;
@@ -59,7 +58,6 @@ namespace Render {
         } swapchain_data;
 
         sImage              draw_image;
-        VkExtent2D          draw_extent;
 
         bool create_swapchain(const uint32_t width, const uint32_t height, const VkFormat format, sSwapchainData &swapchain_data);
         void destroy_swapchain(sSwapchainData &swapchain_data);

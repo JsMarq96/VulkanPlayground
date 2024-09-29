@@ -170,3 +170,43 @@ VkImageViewCreateInfo VK_Helpers::image_view2D_create_info( const VkFormat forma
         }
     };
 }
+
+
+void VK_Helpers::copy_image_image(  const VkCommandBuffer cmd, 
+                                    const VkImage src, 
+                                    const VkExtent3D src_size, 
+                                    const VkImage dst, 
+                                    const VkExtent3D dst_size) {
+    VkImageBlit2 blit_region = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
+        .pNext = nullptr,
+        .srcSubresource = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, // TODO extend this to depth and others
+            .mipLevel = 0u,
+            .baseArrayLayer = 0u,
+            .layerCount = 1u,
+        },
+        .srcOffsets = {{0, 0, 0}, {(const int32_t) src_size.width, (const int32_t) src_size.height, (const int32_t) src_size.depth}},
+        .dstSubresource = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, // TODO extend this to depth and others
+            .mipLevel = 0u,
+            .baseArrayLayer = 0u,
+            .layerCount = 1u,
+        },
+        .dstOffsets = {{0, 0, 0}, {(const int32_t) dst_size.width, (const int32_t) dst_size.height, (const int32_t) dst_size.depth}}
+    };
+
+    VkBlitImageInfo2 blit_info = {
+        .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
+        .pNext = nullptr,
+        .srcImage = src,
+        .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        .dstImage = dst,
+        .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .regionCount = 1u,
+        .pRegions = &blit_region,
+        .filter = VK_FILTER_LINEAR // Irrelevant if the sizes are the same
+    };
+
+    vkCmdBlitImage2(cmd, &blit_info);
+}
