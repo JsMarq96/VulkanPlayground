@@ -7,7 +7,7 @@
 sImage Render::sBackend::create_image(  const VkFormat img_format, 
                                         const VkImageUsageFlags usage,
                                         const VkMemoryPropertyFlags mem_flags,
-                                        const VkExtent3D img_dims, 
+                                        const VkExtent3D& img_dims, 
                                         const VkImageAspectFlagBits view_flags) {
     sImage result = {
         .extent = img_dims,
@@ -22,12 +22,13 @@ sImage Render::sBackend::create_image(  const VkFormat img_format,
         .requiredFlags = mem_flags
     };
 
-    vmaCreateImage( vk_allocator, 
-                    &img_create_info, 
-                    &img_alloc_info,
-                    &result.image, 
-                    &result.alloc, 
-                    nullptr);
+    vk_assert_msg(  vmaCreateImage( vk_allocator, 
+                                    &img_create_info, 
+                                    &img_alloc_info,
+                                    &result.image, 
+                                    &result.alloc, 
+                                    nullptr),
+                    "Error creating image");
     
     VkImageViewCreateInfo img_view_create_info = VK_Helpers::image_view2D_create_info(  img_format, 
                                                                                         result.image, 

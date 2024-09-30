@@ -62,7 +62,7 @@ namespace Render {
         bool create_swapchain(const uint32_t width, const uint32_t height, const VkFormat format, sSwapchainData &swapchain_data);
         void destroy_swapchain(sSwapchainData &swapchain_data);
 
-        sImage create_image(const VkFormat img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
+        sImage create_image(const VkFormat img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
 
         inline sFrame& get_current_frame() { 
             return in_flight_frames[frame_number % FRAME_BUFFER_COUNT]; 

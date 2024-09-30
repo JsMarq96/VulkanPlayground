@@ -137,9 +137,9 @@ bool initialize_swapchain(Render::sBackend &instance) {
         return false;
     }
 
-    VkImageUsageFlags image_usages;
-    image_usages = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-    image_usages |= VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    VkImageUsageFlags image_usages = 0u;
+    image_usages = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    image_usages |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     image_usages |= VK_IMAGE_USAGE_STORAGE_BIT;
     image_usages |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
@@ -149,7 +149,7 @@ bool initialize_swapchain(Render::sBackend &instance) {
         1u
     };
 
-    instance.draw_image = instance.create_image(VK_FORMAT_R16G16B16_SFLOAT,
+    instance.draw_image = instance.create_image(VK_FORMAT_R16G16B16A16_SFLOAT,
                                                 image_usages, 
                                                 VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 
                                                 draw_image_extent);
