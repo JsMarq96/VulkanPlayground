@@ -3,12 +3,12 @@
 #include <VkBootstrap.h>
 
 void Render::sBackend::clean() {
-    for(uint32_t i = 0u; i < FRAME_BUFFER_COUNT; i++) {
-        vkDestroyCommandPool(gpu_instance.device, in_flight_frames[i].cmd_pool, nullptr);
-
+    for(uint32_t i = FRAME_BUFFER_COUNT; i > 0u; i--) {
         vkDestroyFence(gpu_instance.device, in_flight_frames[i].render_fence, nullptr);
         vkDestroySemaphore(gpu_instance.device, in_flight_frames[i].render_semaphore, nullptr);
         vkDestroySemaphore(gpu_instance.device, in_flight_frames[i].swapchain_semaphore, nullptr);
+
+        vkDestroyCommandPool(gpu_instance.device, in_flight_frames[i].cmd_pool, nullptr);
     }
 
     destroy_swapchain(swapchain_data);
