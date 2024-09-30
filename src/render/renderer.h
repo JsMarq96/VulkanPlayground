@@ -29,7 +29,8 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_2/vulkan_shader_drawing/
+    // https://vkguide.dev/docs/new_chapter_2/vulkan_shader_code/
+    // With the layout, we can now allocate the descriptor sets. Lets also write a
 
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;

@@ -3,8 +3,30 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
+#define MAX_BIDING_COUNT 8u
+
 // Namespace for all vulkan helper functions
 namespace VK_Helpers {
+    // Structures
+
+    struct sDescriptorLayoutBuilder {
+        // Assemble Descriptor set layouts with the builder pattern
+        VkDescriptorSetLayoutBinding descriptor_pairs[MAX_BIDING_COUNT];
+        uint8_t descriptor_count = 0u;
+
+        VkDevice descriptor_device;
+        VkShaderStageFlags descriptor_shader_stage;
+        VkDescriptorSetLayoutCreateFlags create_flags = 0u;
+        void* p_next = nullptr;
+
+        static sDescriptorLayoutBuilder create( const VkDevice device, 
+                                                const VkShaderStageFlags shader_stage, 
+                                                void* p_next = nullptr, 
+                                                const VkDescriptorSetLayoutCreateFlags flags = 0u);
+        sDescriptorLayoutBuilder& add_biding(const uint8_t binding, const VkDescriptorType type);
+        VkDescriptorSetLayout build();
+    };
+
     // Cmd pool
     VkCommandPoolCreateInfo create_cmd_pool_info(const uint32_t queue_family_index, const VkCommandPoolCreateFlags flags = 0u);
 
@@ -28,4 +50,7 @@ namespace VK_Helpers {
     VkImageViewCreateInfo image_view2D_create_info(const VkFormat format, const VkImage &image, const VkImageAspectFlags &aspect_flags);
     // TODO: copy also with vkCmdCopyImage (more perfomant)
     void copy_image_image(const VkCommandBuffer cmd, const VkImage src, const VkExtent3D src_size, const VkImage dst, const VkExtent3D dst_size);
+
+    // Descritors
+
 }
