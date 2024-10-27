@@ -1,6 +1,7 @@
 #include "vk_helpers.h"
 
 #include "render_utils.h"
+#include "../utils.h"
 
 // Functions ===============================
 
@@ -213,4 +214,28 @@ void VK_Helpers::copy_image_image(  const VkCommandBuffer cmd,
     };
 
     vkCmdBlitImage2(cmd, &blit_info);
+}
+
+// Shaders
+bool VK_Helpers::load_shader_module(    const char* dir, 
+                                        const VkDevice &device, 
+                                        VkShaderModule *result  ) {
+    char* raw_shader = nullptr;
+
+    const uint64_t file_size = bin_file_open(dir, &raw_shader);
+
+    VkShaderModuleCreateInfo create_info = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .pNext = nullptr,
+        .codeSize = file_size,
+        .pCode = (uint32_t*) raw_shader
+    };
+
+    bool success = true;
+    if (vkCreateShaderModule(device, &create_info, nullptr, result) != VK_SUCCESS) {
+        success = false;
+    }
+
+    free(raw_shader);
+    return success;
 }

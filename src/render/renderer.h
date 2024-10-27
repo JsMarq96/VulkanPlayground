@@ -54,6 +54,9 @@ namespace Render {
         VkDescriptorSet         draw_image_descriptor_set;
         VkDescriptorSetLayout   draw_image_descritpor_layout;
 
+        VkPipeline              gradient_draw_compute_pipeline;
+        VkPipelineLayout        gradient_draw_compute_pipeline_layout;
+
         struct sSwapchainData {
             VkFormat        format;
             VkExtent2D      extent;

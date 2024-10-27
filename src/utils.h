@@ -40,3 +40,11 @@ inline uint64_t bin_file_open(const char* file_dir,
 
     return file_size;
 }
+
+inline uint8_t str_file_open(   const char* file_dir,
+                                char** result_buffer    ) {
+    const uint64_t bin_file_size = bin_file_open(file_dir, result_buffer);
+
+    // TODO: should remove the null terminator from the size??
+    return bin_file_size / sizeof(char);
+}

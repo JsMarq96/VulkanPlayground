@@ -1,5 +1,9 @@
 #include "descriptor_set.h"
 
+#include <cstdlib>
+
+#include "render_utils.h"
+
 // DESCRIPTOR LAYOUT BUILDER =====================
 sDescriptorLayoutBuilder sDescriptorLayoutBuilder::create(  const VkDevice device, 
                                                             const VkShaderStageFlags shader_stage, 
@@ -27,7 +31,7 @@ sDescriptorLayoutBuilder& sDescriptorLayoutBuilder::add_biding( const uint8_t bi
     return *this;
 }
 
-VkDescriptorSetLayout sDescriptorLayoutBuilder::build(  void *next_pointer = nullptr ) {
+VkDescriptorSetLayout sDescriptorLayoutBuilder::build(  void *next_pointer ) {
     VkDescriptorSetLayoutCreateInfo info = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .pNext = next_pointer,

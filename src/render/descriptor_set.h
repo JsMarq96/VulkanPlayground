@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan.h>
 
+#define MAX_BIDING_COUNT 8u
+
 struct sDescriptorLayoutBuilder {
     // Assemble Descriptor set layouts with the builder pattern
     VkDescriptorSetLayoutBinding descriptor_pairs[MAX_BIDING_COUNT];

@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 
-#define MAX_BIDING_COUNT 8u
-
 // Namespace for all vulkan helper functions
 namespace VK_Helpers {
     // Cmd pool
@@ -31,6 +29,6 @@ namespace VK_Helpers {
     // TODO: copy also with vkCmdCopyImage (more perfomant)
     void copy_image_image(const VkCommandBuffer cmd, const VkImage src, const VkExtent3D src_size, const VkImage dst, const VkExtent3D dst_size);
 
-    // Descritors
-
+    // Shaders
+    bool load_shader_module(const char* dir, const VkDevice &device, VkShaderModule *result);
 }

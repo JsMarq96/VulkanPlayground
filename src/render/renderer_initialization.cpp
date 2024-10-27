@@ -8,6 +8,7 @@
 
 #include "../common.h"
 #include "vk_helpers.h"
+#include "descriptor_set.h"
 
 bool intialize_window(Render::sDeviceInstance &instance);
 bool initialize_vulkan(Render::sDeviceInstance &instance);
@@ -16,6 +17,7 @@ bool initialize_command_buffers(Render::sBackend &instance);
 bool initialize_sync_structs(Render::sBackend &instance);
 bool initialize_memory_alloc(Render::sBackend &instance);
 bool initialize_descriptors(Render::sBackend &instance);
+bool initialize_pipelines(Render::sBackend &instance);
 
 bool Render::sBackend::init() {
     bool is_initialized = true;
@@ -27,6 +29,7 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_sync_structs(*this);
     is_initialized &= initialize_swapchain(*this);
     is_initialized &= initialize_descriptors(*this);
+    is_initialized &= initialize_pipelines(*this);
 
     return is_initialized;
 }
@@ -244,5 +247,77 @@ bool initialize_memory_alloc(Render::sBackend &instance) {
 };
 
 bool initialize_descriptors(Render::sBackend &instance) {
+    // Create the descriptor pool
+    {
+        sDSetPoolAllocator::sPoolRatio pool_ratios[1u] = {{ .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, .ratio = 1u}};
+        instance.global_descritpor_allocator.init(instance.gpu_instance.device, 1u, pool_ratios, 1u);
+    }
+
+    // Create render test descriptor set
+    instance.draw_image_descritpor_layout = 
+        sDescriptorLayoutBuilder::create(instance.gpu_instance.device, VK_SHADER_STAGE_COMPUTE_BIT)
+        .add_biding(0u, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
+        .build();
+    
+    instance.draw_image_descriptor_set = instance.global_descritpor_allocator.alloc(instance.draw_image_descritpor_layout);
+
+    // TODO: Manage this better than asserts!!
+    return true;
+}
+
+
+
+bool initialize_pipelines(Render::sBackend &instance) {
+
+    VkPipelineLayoutCreateInfo grad_pipe_layout_create_info = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+        .pNext = nullptr,
+        .setLayoutCount = 1u,
+        .pSetLayouts = &instance.draw_image_descritpor_layout
+    };
+
+    if (vkCreatePipelineLayout( instance.gpu_instance.device, 
+                                &grad_pipe_layout_create_info,
+                                nullptr,
+                                &instance.gradient_draw_compute_pipeline_layout) != VK_SUCCESS) {
+        spdlog::error("Error creating pipeline layout" );
+
+        return false;
+    }
+
+    // Load shader module
+    VkShaderModule gradient_shader_module;
+    if (VK_Helpers::load_shader_module( "shaders/gradient.comp", 
+                                        instance.gpu_instance.device, 
+                                        &gradient_shader_module)) {
+        spdlog::error("Error building the shader module");
+
+        return false;
+    }
+
+    VkComputePipelineCreateInfo grad_pipe_create_info = {
+        .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+        .pNext = nullptr,
+        .stage = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .pNext = nullptr,
+            .stage = VK_SHADER_STAGE_COMPUTE_BIT,
+            .module = gradient_shader_module,
+            .pName = "main"
+        },
+        .layout = instance.gradient_draw_compute_pipeline_layout
+    };
+
+    if (vkCreateComputePipelines(   instance.gpu_instance.device,
+                                    VK_NULL_HANDLE,
+                                    1u,
+                                    &grad_pipe_create_info,
+                                    nullptr,
+                                    &instance.gradient_draw_compute_pipeline) != VK_SUCCESS) {
+        spdlog::error("Error creating the compute pipeline");
+
+        return false;
+    }
+
     return true;
 }
