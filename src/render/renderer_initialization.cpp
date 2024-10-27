@@ -15,6 +15,7 @@ bool initialize_swapchain(Render::sBackend &instance);
 bool initialize_command_buffers(Render::sBackend &instance);
 bool initialize_sync_structs(Render::sBackend &instance);
 bool initialize_memory_alloc(Render::sBackend &instance);
+bool initialize_descriptors(Render::sBackend &instance);
 
 bool Render::sBackend::init() {
     bool is_initialized = true;
@@ -25,6 +26,7 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_command_buffers(*this);
     is_initialized &= initialize_sync_structs(*this);
     is_initialized &= initialize_swapchain(*this);
+    is_initialized &= initialize_descriptors(*this);
 
     return is_initialized;
 }
@@ -240,3 +242,7 @@ bool initialize_memory_alloc(Render::sBackend &instance) {
 
     return true;
 };
+
+bool initialize_descriptors(Render::sBackend &instance) {
+    return true;
+}

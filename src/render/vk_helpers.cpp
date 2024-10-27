@@ -2,54 +2,6 @@
 
 #include "render_utils.h"
 
-// Structures =============================
-
-VK_Helpers::sDescriptorLayoutBuilder VK_Helpers::sDescriptorLayoutBuilder::create(  const VkDevice device, 
-                                                                                    const VkShaderStageFlags shader_stage, 
-                                                                                    void* p_next, 
-                                                                                    const VkDescriptorSetLayoutCreateFlags flags) {
-    sDescriptorLayoutBuilder builder;
-    
-    builder.descriptor_device = device;
-    builder.descriptor_shader_stage = shader_stage;
-    builder.p_next = p_next;
-    builder.create_flags = flags;
-
-    return builder;
-}
-
-VK_Helpers::sDescriptorLayoutBuilder& VK_Helpers::sDescriptorLayoutBuilder::add_biding(const uint8_t binding, const VkDescriptorType type) {
-    descriptor_pairs[descriptor_count++] = {
-            .binding = binding,
-            .descriptorType = type,
-            .descriptorCount = 1u,
-            .stageFlags = descriptor_shader_stage
-        };
-
-    return *this;
-}
-
-VkDescriptorSetLayout VK_Helpers::sDescriptorLayoutBuilder::build() {
-    VkDescriptorSetLayoutCreateInfo info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = create_flags,
-        .bindingCount = descriptor_count,
-        .pBindings = descriptor_pairs
-    };
-
-    VkDescriptorSetLayout resulting_set = {};
-
-    vk_assert_msg(  vkCreateDescriptorSetLayout(descriptor_device, 
-                                                &info, 
-                                                nullptr, 
-                                                &resulting_set),
-                    "Error creating descritpor set layout");
-
-    return resulting_set;
-}
-
-
 // Functions ===============================
 
 VkCommandPoolCreateInfo VK_Helpers::create_cmd_pool_info(   const uint32_t queue_family_index, 

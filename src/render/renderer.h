@@ -43,12 +43,16 @@ namespace Render {
     };
 
     struct sBackend {
-        sDeviceInstance     gpu_instance = {};
+        sDeviceInstance         gpu_instance = {};
 
-        VmaAllocator        vk_allocator;
+        VmaAllocator            vk_allocator;
 
-        uint64_t            frame_number = 0u;
-        sFrame              in_flight_frames[FRAME_BUFFER_COUNT];
+        uint64_t                frame_number = 0u;
+        sFrame                  in_flight_frames[FRAME_BUFFER_COUNT];
+
+        sDSetPoolAllocator      global_descritpor_allocator;
+        VkDescriptorSet         draw_image_descriptor_set;
+        VkDescriptorSetLayout   draw_image_descritpor_layout;
 
         struct sSwapchainData {
             VkFormat        format;

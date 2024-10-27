@@ -7,26 +7,6 @@
 
 // Namespace for all vulkan helper functions
 namespace VK_Helpers {
-    // Structures
-
-    struct sDescriptorLayoutBuilder {
-        // Assemble Descriptor set layouts with the builder pattern
-        VkDescriptorSetLayoutBinding descriptor_pairs[MAX_BIDING_COUNT];
-        uint8_t descriptor_count = 0u;
-
-        VkDevice descriptor_device;
-        VkShaderStageFlags descriptor_shader_stage;
-        VkDescriptorSetLayoutCreateFlags create_flags = 0u;
-        void* p_next = nullptr;
-
-        static sDescriptorLayoutBuilder create( const VkDevice device, 
-                                                const VkShaderStageFlags shader_stage, 
-                                                void* p_next = nullptr, 
-                                                const VkDescriptorSetLayoutCreateFlags flags = 0u);
-        sDescriptorLayoutBuilder& add_biding(const uint8_t binding, const VkDescriptorType type);
-        VkDescriptorSetLayout build();
-    };
-
     // Cmd pool
     VkCommandPoolCreateInfo create_cmd_pool_info(const uint32_t queue_family_index, const VkCommandPoolCreateFlags flags = 0u);
 

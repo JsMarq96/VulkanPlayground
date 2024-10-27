@@ -3,6 +3,8 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
+#include "descriptor_set.h"
+
 struct sImage {
     VkImage         image;
     VkImageView     image_view;
