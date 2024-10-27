@@ -287,7 +287,7 @@ bool initialize_pipelines(Render::sBackend &instance) {
 
     // Load shader module
     VkShaderModule gradient_shader_module;
-    if (VK_Helpers::load_shader_module( "shaders/gradient.comp", 
+    if (VK_Helpers::load_shader_module( "../shaders/gradient.comp", 
                                         instance.gpu_instance.device, 
                                         &gradient_shader_module)) {
         spdlog::error("Error building the shader module");
@@ -318,6 +318,12 @@ bool initialize_pipelines(Render::sBackend &instance) {
 
         return false;
     }
+
+    vkDestroyShaderModule(  instance.gpu_instance.device, 
+                            gradient_shader_module, 
+                            nullptr);
+
+    // TODO: delete add  to future delete queue pipeline and pipline layout
 
     return true;
 }

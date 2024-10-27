@@ -20,16 +20,7 @@ int main() {
     while(!glfwWindowShouldClose(renderer.gpu_instance.window)) {
         glfwPollEvents();
 
-        renderer.start_frame_capture();
-
-        // TODO Render something
-        VkClearColorValue clear_color = {{ 0.0f, 0.0f, std::abs(std::sin(renderer.frame_number / 60.f)), 1.0f  }};
-
-        VkImageSubresourceRange clear_range = VK_Helpers::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
-
-        vkCmdClearColorImage(renderer.get_current_frame().cmd_buffer, renderer.draw_image.image, VK_IMAGE_LAYOUT_GENERAL, &clear_color, 1u, &clear_range);
-
-        renderer.end_frame_capture();
+        renderer.render();
     }
 
     spdlog::info("Cleaning the render");

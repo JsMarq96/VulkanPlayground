@@ -57,16 +57,6 @@ void Render::sBackend::start_frame_capture() {
                                         draw_image.image, 
                                         VK_IMAGE_LAYOUT_UNDEFINED, 
                                         VK_IMAGE_LAYOUT_GENERAL);
-    
-    // const VkImageSubresourceRange clear_range = VK_Helpers::image_subresource_range(VK_IMAGE_ASPECT_COLOR_BIT);
-    // const VkClearColorValue clear_color = {0.0f, 0.0f, 0.0f, 1.0f};
-
-    // vkCmdClearColorImage(   current_frame.cmd_buffer, 
-    //                         swapchain_data.images[swapchain_idx],
-    //                         VK_IMAGE_LAYOUT_GENERAL, 
-    //                         &clear_color, 
-    //                         1u, 
-    //                         &clear_range);
 }
 
 

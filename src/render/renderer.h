@@ -30,6 +30,7 @@ namespace Render {
     };
 
     // https://vkguide.dev/docs/new_chapter_2/vulkan_shader_code/
+    // Debug shader module
     // With the layout, we can now allocate the descriptor sets. Lets also write a
 
     struct sDeviceInstance {
@@ -78,6 +79,8 @@ namespace Render {
 
         void start_frame_capture();
         void end_frame_capture();
+
+        void render();
 
         bool init();
         void clean();
