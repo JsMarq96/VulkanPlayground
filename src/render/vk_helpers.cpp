@@ -232,7 +232,9 @@ bool VK_Helpers::load_shader_module(    const char* dir,
     };
 
     bool success = true;
-    if (vkCreateShaderModule(device, &create_info, nullptr, result) != VK_SUCCESS) {
+    VkResult code = vkCreateShaderModule(device, &create_info, nullptr, result);
+    if (code != VK_SUCCESS) {
+        spdlog::error("Shader module error: {}", code);
         success = false;
     }
 

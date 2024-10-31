@@ -23,7 +23,7 @@ inline uint64_t bin_file_open(const char* file_dir,
                               char** raw_file) {
     FILE *b_file = fopen(file_dir, "rb");
 
-    assert_msg(b_file != nullptr, "Error opening bianry file");
+    assert_msg(b_file != nullptr, "Error opening binary file");
 
     fseek(b_file, 0, SEEK_END);
     uint64_t file_size = ftell(b_file);

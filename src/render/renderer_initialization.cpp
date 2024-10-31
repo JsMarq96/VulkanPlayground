@@ -53,6 +53,7 @@ bool initialize_vulkan(Render::sDeviceInstance &instance) {
                                                 .set_app_name(WIN_NAME)
                                                 .use_default_debug_messenger()
                                                 .request_validation_layers(true)
+                                                .enable_validation_layers(true)
                                                 .require_api_version(1u, 3u, 0u)
                                                 .build();
 
@@ -287,7 +288,7 @@ bool initialize_pipelines(Render::sBackend &instance) {
 
     // Load shader module
     VkShaderModule gradient_shader_module;
-    if (VK_Helpers::load_shader_module( "../shaders/gradient.comp", 
+    if (!VK_Helpers::load_shader_module("../shaders/gradient.comp.spv", 
                                         instance.gpu_instance.device, 
                                         &gradient_shader_module)) {
         spdlog::error("Error building the shader module");

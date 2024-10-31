@@ -12,7 +12,7 @@ file(GLOB C_SOURCES "src/*.c")
 file(GLOB SUBFOLDER_H_SOURCES "src/*/*.h")
 file(GLOB SUBFOLDER_CPP_SOURCES "src/*/*.cpp")
 file(GLOB SUBFOLDER_C_SOURCES "src/*/*.c")
-file(GLOB RAW_SHADERS "shaders/*.vert" "shaders/*.frag")
+file(GLOB RAW_SHADERS "shaders/*.vert" "shaders/*.frag" "shaders/*.comp")
 
 # ImGUI
 include_directories(libraries/imgui/)
@@ -68,7 +68,7 @@ include_directories(${Vulkan_INCLUDE_DIR} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCE
 # Copy Shaders folder to binary path
 add_custom_command(	TARGET VulkanPlayground POST_BUILD
                    	COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    ${CMAKE_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:VulkanPlayground>/shaders)
+                    ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 
 
 # Parallel build
