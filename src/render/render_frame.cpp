@@ -45,6 +45,18 @@ void render_background(Render::sBackend &renderer) {
                             0u,
                             nullptr);
 
+    // Set up push constants
+    Render::sComputePushConstants push_constants;
+    push_constants.data1 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    push_constants.data2 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+
+    vkCmdPushConstants( current_frame.cmd_buffer, 
+                        renderer.gradient_draw_compute_pipeline_layout, 
+                        VK_SHADER_STAGE_COMPUTE_BIT, 
+                        0u, 
+                        sizeof(Render::sComputePushConstants), 
+                        &push_constants);
+
     const VkExtent2D &swapchain_extent = renderer.swapchain_data.extent;
     vkCmdDispatch(  current_frame.cmd_buffer, 
                     ceil(swapchain_extent.width / 16.0), 

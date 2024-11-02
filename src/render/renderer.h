@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
+#include <glm/glm.hpp>
 
 #include "resources.h"
 
@@ -10,6 +11,13 @@
 struct GLFWwindow;
 
 namespace Render {
+
+    struct sComputePushConstants {
+        glm::vec4   data1;
+        glm::vec4   data2;
+        glm::vec4   data3;
+        glm::vec4   data4;
+    };
 
     struct sFrame {
         VkCommandPool       cmd_pool;
@@ -29,10 +37,8 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_2/vulkan_shader_code/
-    // Debug shader module
-    // With the layout, we can now allocate the descriptor sets. Lets also write a
-
+    // https://vkguide.dev/docs/new_chapter_3/render_pipeline/
+   
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;
         VkInstance                  instance;

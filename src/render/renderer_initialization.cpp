@@ -289,12 +289,19 @@ bool initialize_descriptors(Render::sBackend &instance) {
 
 
 bool initialize_pipelines(Render::sBackend &instance) {
+    VkPushConstantRange push_constant = {
+        .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+        .offset = 0u,
+        .size = sizeof(Render::sComputePushConstants)
+    };
 
     VkPipelineLayoutCreateInfo grad_pipe_layout_create_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
         .setLayoutCount = 1u,
-        .pSetLayouts = &instance.draw_image_descritpor_layout
+        .pSetLayouts = &instance.draw_image_descritpor_layout,
+        .pushConstantRangeCount = 1u,
+        .pPushConstantRanges = &push_constant
     };
 
     if (vkCreatePipelineLayout( instance.gpu_instance.device, 
