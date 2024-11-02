@@ -251,7 +251,7 @@ bool initialize_descriptors(Render::sBackend &instance) {
     // Create the descriptor pool
     {
         sDSetPoolAllocator::sPoolRatio pool_ratios[1u] = {{ .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, .ratio = 1u}};
-        instance.global_descritpor_allocator.init(instance.gpu_instance.device, 1u, pool_ratios, 1u);
+        instance.global_descritpor_allocator.init(instance.gpu_instance.device, 10u, pool_ratios, 1u);
     }
 
     // Create render test descriptor set
@@ -262,7 +262,27 @@ bool initialize_descriptors(Render::sBackend &instance) {
     
     instance.draw_image_descriptor_set = instance.global_descritpor_allocator.alloc(instance.draw_image_descritpor_layout);
 
+    // Initialize the descriptor set
+    VkDescriptorImageInfo img_info = {
+        .imageView = instance.draw_image.image_view,
+        .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+    };
+
+    VkWriteDescriptorSet draw_image_write = {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .pNext = nullptr,
+        .dstSet = instance.draw_image_descriptor_set,
+        .dstBinding = 0u,
+        .descriptorCount = 1u,
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+        .pImageInfo = &img_info
+    };
+
+    vkUpdateDescriptorSets(instance.gpu_instance.device, 1u, &draw_image_write, 0u, nullptr);
     // TODO: Manage this better than asserts!!
+    
+    // TOODO: destroy pool and descritpor set on the deletion queue
+    
     return true;
 }
 
