@@ -241,3 +241,16 @@ bool VK_Helpers::load_shader_module(    const char* dir,
     free(raw_shader);
     return success;
 }
+
+VkPipelineShaderStageCreateInfo VK_Helpers::shader_stage_create_info(   const VkShaderStageFlagBits stage, 
+                                                                        const VkShaderModule shader_module) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0u,
+        .stage = stage,
+        .module = shader_module,
+        .pName = "main",
+        .pSpecializationInfo = nullptr
+    };
+}

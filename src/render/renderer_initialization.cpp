@@ -9,6 +9,7 @@
 #include "../common.h"
 #include "vk_helpers.h"
 #include "descriptor_set.h"
+#include "pipeline.h"
 
 bool intialize_window(Render::sDeviceInstance &instance);
 bool initialize_vulkan(Render::sDeviceInstance &instance);
@@ -17,7 +18,8 @@ bool initialize_command_buffers(Render::sBackend &instance);
 bool initialize_sync_structs(Render::sBackend &instance);
 bool initialize_memory_alloc(Render::sBackend &instance);
 bool initialize_descriptors(Render::sBackend &instance);
-bool initialize_pipelines(Render::sBackend &instance);
+bool initialize_compute_pipelines(Render::sBackend &instance);
+bool initialize_graphics_pipelines(Render::sBackend &instance);
 
 bool Render::sBackend::init() {
     bool is_initialized = true;
@@ -29,7 +31,8 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_sync_structs(*this);
     is_initialized &= initialize_swapchain(*this);
     is_initialized &= initialize_descriptors(*this);
-    is_initialized &= initialize_pipelines(*this);
+    is_initialized &= initialize_compute_pipelines(*this);
+    is_initialized &= initialize_graphics_pipelines(*this);
 
     return is_initialized;
 }
@@ -288,7 +291,7 @@ bool initialize_descriptors(Render::sBackend &instance) {
 
 
 
-bool initialize_pipelines(Render::sBackend &instance) {
+bool initialize_compute_pipelines(Render::sBackend &instance) {
     VkPushConstantRange push_constant = {
         .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
         .offset = 0u,
@@ -308,7 +311,7 @@ bool initialize_pipelines(Render::sBackend &instance) {
                                 &grad_pipe_layout_create_info,
                                 nullptr,
                                 &instance.gradient_draw_compute_pipeline_layout) != VK_SUCCESS) {
-        spdlog::error("Error creating pipeline layout" );
+        spdlog::error("Error creating compute pipeline layout" );
 
         return false;
     }
@@ -352,6 +355,76 @@ bool initialize_pipelines(Render::sBackend &instance) {
                             nullptr);
 
     // TODO: delete add  to future delete queue pipeline and pipline layout
+
+    return true;
+}
+
+
+bool initialize_graphics_pipelines(Render::sBackend &instance) {
+    VkDevice device = instance.gpu_instance.device;
+
+    VkShaderModule triangle_frag_shader, triangle_vertex_shader;
+    {
+        if (!VK_Helpers::load_shader_module(    "../shaders/triangle.vert.spv", 
+                                                device, 
+                                                &triangle_vertex_shader)) {
+            spdlog::error("Error when building the triangle verte shaders");
+            return false;
+        }
+
+        if (!VK_Helpers::load_shader_module(    "../shaders/triangle.frag.spv", 
+                                                device, 
+                                                &triangle_frag_shader)) {
+            spdlog::error("Error when building the triangle fragment shaders");
+            return false;
+        }
+    }
+
+    VkPipelineLayout pipeline_layout;
+    {
+        VkPipelineLayoutCreateInfo layout_create_info = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            .pNext = nullptr,
+            .setLayoutCount = 0u,
+            .pSetLayouts = nullptr,
+            .pushConstantRangeCount = 0u,
+            .pPushConstantRanges = nullptr
+        };
+
+        if (vkCreatePipelineLayout( device, 
+                                    &layout_create_info,
+                                    nullptr,
+                                    &pipeline_layout) != VK_SUCCESS) {
+            spdlog::error("Error creating render pipeline layout" );
+
+            return false;
+        }
+    }
+
+    VkPipeline render_pipeline;
+    {
+        Render::sGraphicsPipelineBuilder builder;
+
+        builder.set_shaders(triangle_vertex_shader, triangle_frag_shader);
+        builder.set_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        builder.set_polygon_mode(VK_POLYGON_MODE_FILL);
+        builder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
+        builder.set_depth_format(VK_FORMAT_UNDEFINED);
+        builder.set_stencil_format(VK_FORMAT_UNDEFINED);
+        builder.disable_multisampling();
+        builder.disable_depth_test();
+        builder.disable_blending();
+        builder.add_color_attachment_format(instance.draw_image.format);
+
+        render_pipeline = builder.build(device, pipeline_layout);
+    }
+
+    // TODO add to deletion queue of the pipeline layout and the pipeline
+
+    {
+        vkDestroyShaderModule(device, triangle_vertex_shader, nullptr);
+        vkDestroyShaderModule(device, triangle_frag_shader, nullptr);
+    }
 
     return true;
 }

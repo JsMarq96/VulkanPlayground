@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include "resources.h"
+#include "pipeline.h"
 
 #define FRAME_BUFFER_COUNT 3u
 
