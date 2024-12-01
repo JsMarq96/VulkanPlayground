@@ -4,6 +4,8 @@
 #include <vk_mem_alloc.h>
 #include <glm/glm.hpp>
 
+#include "gpu_buffers.h"
+#include "gpu_mesh.h"
 #include "resources.h"
 #include "pipeline.h"
 
@@ -38,7 +40,7 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_3/render_pipeline/
+    // https://vkguide.dev/docs/new_chapter_3/mesh_buffers/
    
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;
@@ -82,6 +84,11 @@ namespace Render {
         void destroy_swapchain(sSwapchainData &swapchain_data);
 
         sImage create_image(const VkFormat img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
+
+        sGPUBuffer create_buffer(const size_t buffer_size, const VkBufferUsageFlags usage, const VmaMemoryUsage mem_usage, const bool mapped_on_startup = false);
+        void clean_buffer(const sGPUBuffer &buffer);
+
+        sGPUMesh create_gpu_mesh(const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count);
 
         inline sFrame& get_current_frame() { 
             return in_flight_frames[frame_number % FRAME_BUFFER_COUNT]; 

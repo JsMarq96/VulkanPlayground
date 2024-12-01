@@ -10,6 +10,7 @@
 #include "vk_helpers.h"
 #include "descriptor_set.h"
 #include "pipeline.h"
+#include "gpu_buffers.h"
 
 bool intialize_window(Render::sDeviceInstance &instance);
 bool initialize_vulkan(Render::sDeviceInstance &instance);
