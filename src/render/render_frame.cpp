@@ -6,12 +6,14 @@
 
 void clear_screen(Render::sBackend &renderer);
 void render_background(Render::sBackend &renderer);
+void render_geometry(Render::sBackend &renderer);
 
 void Render::sBackend::render() {
     start_frame_capture();
     
     clear_screen(*this);
     render_background(*this);
+    render_geometry(*this);
 
     end_frame_capture();
 }
@@ -62,4 +64,55 @@ void render_background(Render::sBackend &renderer) {
                     ceil(swapchain_extent.width / 16.0), 
                     ceil(swapchain_extent.height / 16.0), 
                     1u );
+}
+
+void render_geometry(Render::sBackend &renderer) {
+    Render::sFrame &current_frame = renderer.get_current_frame();
+
+    VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
+                                        renderer.draw_image.image, 
+                                        VK_IMAGE_LAYOUT_GENERAL, 
+                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    
+    
+    VkRenderingAttachmentInfo color_attachment_info = VK_Helpers::attachment_info(  renderer.draw_image.image_view, 
+                                                                                    nullptr, 
+                                                                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    
+    VkRenderingInfo render_info = VK_Helpers::create_render_info(renderer.swapchain_data.extent, &color_attachment_info, nullptr);
+
+    vkCmdBeginRendering(current_frame.cmd_buffer, &render_info);
+
+    vkCmdBindPipeline(current_frame.cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.render_triangle_pipeline);
+
+    // Set viewport
+    {
+        VkViewport viewport = {
+            .x = 0u, .y = 0u,
+            .width = (float) renderer.swapchain_data.extent.width,
+            .height = (float) renderer.swapchain_data.extent.height,
+            .minDepth = 0.0f, 
+            .maxDepth = 1.0f
+        };
+
+        vkCmdSetViewport(current_frame.cmd_buffer, 0u, 1u, &viewport);
+    }
+
+    // Set render scissor
+    {
+        VkRect2D scissor = {
+            .offset = {.x = 0u, .y = 0u},
+            .extent = {
+                .width = renderer.swapchain_data.extent.width,
+                .height = renderer.swapchain_data.extent.height
+            }
+        };
+
+        vkCmdSetScissor(current_frame.cmd_buffer, 0u, 1u, &scissor);
+    }
+
+    vkCmdDraw(current_frame.cmd_buffer, 3u, 1u, 0u, 0u);
+
+    vkCmdEndRendering(current_frame.cmd_buffer);
+     
 }

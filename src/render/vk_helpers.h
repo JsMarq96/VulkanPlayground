@@ -32,4 +32,9 @@ namespace VK_Helpers {
     // Shaders
     bool load_shader_module(const char* dir, const VkDevice &device, VkShaderModule *result);
     VkPipelineShaderStageCreateInfo shader_stage_create_info(const VkShaderStageFlagBits stage, const VkShaderModule shader_module);
+
+    // Render attachments
+    VkRenderingAttachmentInfo attachment_info(const VkImageView view, const VkClearValue *clear, const VkImageLayout layout);
+
+    VkRenderingInfo create_render_info(const VkExtent2D render_extent, const VkRenderingAttachmentInfo *color_attachment, const VkRenderingAttachmentInfo *depth_attachment);
 }

@@ -65,11 +65,11 @@ void Render::sBackend::end_frame_capture() {
 
     VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
                                         draw_image.image, 
-                                        VK_IMAGE_LAYOUT_GENERAL, 
+                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
                                         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
                                         swapchain_data.images[current_frame.current_swapchain_index], 
-                                        VK_IMAGE_LAYOUT_GENERAL, 
+                                        VK_IMAGE_LAYOUT_UNDEFINED, 
                                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     VK_Helpers::copy_image_image(   current_frame.cmd_buffer, 

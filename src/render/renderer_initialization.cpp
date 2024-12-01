@@ -380,7 +380,6 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         }
     }
 
-    VkPipelineLayout pipeline_layout;
     {
         VkPipelineLayoutCreateInfo layout_create_info = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -394,14 +393,13 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         if (vkCreatePipelineLayout( device, 
                                     &layout_create_info,
                                     nullptr,
-                                    &pipeline_layout) != VK_SUCCESS) {
+                                    &instance.render_triangle_pipeline_layout) != VK_SUCCESS) {
             spdlog::error("Error creating render pipeline layout" );
 
             return false;
         }
     }
 
-    VkPipeline render_pipeline;
     {
         Render::sGraphicsPipelineBuilder builder;
 
@@ -416,7 +414,7 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         builder.disable_blending();
         builder.add_color_attachment_format(instance.draw_image.format);
 
-        render_pipeline = builder.build(device, pipeline_layout);
+        instance.render_triangle_pipeline = builder.build(device, instance.render_triangle_pipeline_layout);
     }
 
     // TODO add to deletion queue of the pipeline layout and the pipeline

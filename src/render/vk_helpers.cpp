@@ -254,3 +254,40 @@ VkPipelineShaderStageCreateInfo VK_Helpers::shader_stage_create_info(   const Vk
         .pSpecializationInfo = nullptr
     };
 }
+
+// Render attachments
+VkRenderingAttachmentInfo VK_Helpers::attachment_info(  const VkImageView view, 
+                                                        const VkClearValue *clear, 
+                                                        const VkImageLayout layout) {
+    VkRenderingAttachmentInfo color_attachment_info = {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = view,
+        .imageLayout = layout,
+        .resolveMode = (VkResolveModeFlagBits) 0u,
+        .resolveImageView = nullptr,
+        .loadOp = (clear) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE
+    };
+
+    if (clear) {
+        color_attachment_info.clearValue = *clear;
+    }
+
+    return color_attachment_info;
+}
+
+VkRenderingInfo VK_Helpers::create_render_info( const VkExtent2D render_extent, 
+                                                const VkRenderingAttachmentInfo *color_attachment, 
+                                                const VkRenderingAttachmentInfo *depth_attachment) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+        .pNext = nullptr,
+        .renderArea = VkRect2D{ {0u, 0u}, render_extent },
+        .layerCount = 1u,
+        .colorAttachmentCount = 1u,
+        .pColorAttachments = color_attachment,
+        .pDepthAttachment = depth_attachment,
+        .pStencilAttachment = nullptr
+    };
+}
