@@ -9,4 +9,10 @@ namespace Render {
         VmaAllocation alloc;
         VmaAllocationInfo alloc_info;
     };
+
+    struct sGPUBufferView {
+        sGPUBuffer *raw_buffer = nullptr;
+        size_t offset = 0u;
+        size_t size = 0u;
+    };
 };

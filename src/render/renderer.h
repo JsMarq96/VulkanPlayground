@@ -10,6 +10,8 @@
 #include "pipeline.h"
 
 #define FRAME_BUFFER_COUNT 3u
+#define MAX_STAGING_BUFFER_COUNT 30u
+#define MAX_STAGING_BUFFER_RESOLVE_COUNT (MAX_STAGING_BUFFER_COUNT * 4u)
 
 struct GLFWwindow;
 
@@ -22,6 +24,11 @@ namespace Render {
         glm::vec4   data4;
     };
 
+    struct sStagingToResolve {
+        sGPUBufferView dst_buffer = {};
+        sGPUBufferView src_buffer = {};
+    };
+
     struct sFrame {
         VkCommandPool       cmd_pool;
         VkCommandBuffer     cmd_buffer;
@@ -30,9 +37,16 @@ namespace Render {
         // For signaling that the render has finished
         VkSemaphore         render_semaphore;
 
-        // Wait for waiting until the prev frame is finished
+        // For waiting until the prev frame is finished
         VkFence             render_fence;
         uint32_t            current_swapchain_index = 0u;
+
+        // Staging buffers for a frame
+        uint32_t            staging_to_resolve_count = 0u;
+        sStagingToResolve   staging_to_resolve[MAX_STAGING_BUFFER_RESOLVE_COUNT] = {};
+
+        uint32_t            staging_buffer_count = 0u;
+        sGPUBuffer          staging_buffers[MAX_STAGING_BUFFER_COUNT] = {};
     };
 
     struct sQueueData {
@@ -96,6 +110,7 @@ namespace Render {
 
         void start_frame_capture();
         void end_frame_capture();
+        void clean_prev_frame();
 
         void render();
 
