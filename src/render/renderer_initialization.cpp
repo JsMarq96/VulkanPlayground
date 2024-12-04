@@ -12,7 +12,7 @@
 #include "pipeline.h"
 #include "gpu_buffers.h"
 
-bool intialize_window(Render::sDeviceInstance &instance);
+bool initialize_window(Render::sDeviceInstance &instance);
 bool initialize_vulkan(Render::sDeviceInstance &instance);
 bool initialize_swapchain(Render::sBackend &instance);
 bool initialize_command_buffers(Render::sBackend &instance);
@@ -25,7 +25,7 @@ bool initialize_graphics_pipelines(Render::sBackend &instance);
 bool Render::sBackend::init() {
     bool is_initialized = true;
 
-    is_initialized &= intialize_window(gpu_instance);
+    is_initialized &= initialize_window(gpu_instance);
     is_initialized &= initialize_vulkan(gpu_instance);
     is_initialized &= initialize_memory_alloc(*this);
     is_initialized &= initialize_command_buffers(*this);
@@ -38,7 +38,7 @@ bool Render::sBackend::init() {
     return is_initialized;
 }
 
-bool intialize_window(Render::sDeviceInstance &instance) {
+bool initialize_window(Render::sDeviceInstance &instance) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
