@@ -117,3 +117,38 @@ Render::sGPUMesh Render::sBackend::create_gpu_mesh( const uint32_t *indices,
 
     return new_mesh;
 }
+
+void Render::sBackend::upload_to_gpu(   void* data, 
+                                        size_t upload_size, 
+                                        sGPUBuffer *src_buffer, 
+                                        size_t src_offset, 
+                                        sFrame &frame_to_upload ) {
+    if (frame_to_upload.staging_buffer_count == MAX_STAGING_BUFFER_COUNT) {
+        // TODO
+    }
+
+    uint32_t staging_idx = frame_to_upload.staging_to_resolve_count++;
+    frame_to_upload.staging_buffers[staging_idx] = create_buffer(   upload_size,
+                                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                                    VMA_MEMORY_USAGE_CPU_ONLY,
+                                                                    true);
+
+    void* mapped_staging_bufffer = frame_to_upload.staging_buffers[staging_idx].alloc->GetMappedData();
+
+    // Copy the data to the CPU side stating buffer
+    memcpy(mapped_staging_bufffer, data, upload_size);
+
+    // Add to the list of the resolves, for when whe have the cmd buffer started n running
+    frame_to_upload.staging_to_resolve[frame_to_upload.staging_to_resolve_count++] = {
+        .dst_buffer = {
+            .raw_buffer = &frame_to_upload.staging_buffers[staging_idx],
+            .offset = 0u,
+            .size = upload_size
+        },
+        .src_buffer = {
+            .raw_buffer = src_buffer,
+            .offset = src_offset,
+            .size = upload_size
+        }
+    };
+}

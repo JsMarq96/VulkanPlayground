@@ -101,6 +101,7 @@ namespace Render {
 
         sGPUBuffer create_buffer(const size_t buffer_size, const VkBufferUsageFlags usage, const VmaMemoryUsage mem_usage, const bool mapped_on_startup = false);
         void clean_buffer(const sGPUBuffer &buffer);
+        void upload_to_gpu(void* data, size_t upload_size, sGPUBuffer *src_buffer, size_t src_offset, sFrame &frame_to_upload);
 
         sGPUMesh create_gpu_mesh(const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count);
 
