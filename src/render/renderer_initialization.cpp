@@ -19,6 +19,7 @@ bool initialize_command_buffers(Render::sBackend &instance);
 bool initialize_sync_structs(Render::sBackend &instance);
 bool initialize_memory_alloc(Render::sBackend &instance);
 bool initialize_descriptors(Render::sBackend &instance);
+bool initialize_mesh_pipelines(Render::sBackend &instance);
 bool initialize_compute_pipelines(Render::sBackend &instance);
 bool initialize_graphics_pipelines(Render::sBackend &instance);
 
@@ -32,6 +33,7 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_sync_structs(*this);
     is_initialized &= initialize_swapchain(*this);
     is_initialized &= initialize_descriptors(*this);
+    is_initialized &= initialize_mesh_pipelines(*this);
     is_initialized &= initialize_compute_pipelines(*this);
     is_initialized &= initialize_graphics_pipelines(*this);
 
@@ -366,10 +368,10 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
 
     VkShaderModule triangle_frag_shader, triangle_vertex_shader;
     {
-        if (!VK_Helpers::load_shader_module(    "../shaders/triangle.vert.spv", 
+        if (!VK_Helpers::load_shader_module(    "../shaders/mesh.vert.spv", 
                                                 device, 
                                                 &triangle_vertex_shader)) {
-            spdlog::error("Error when building the triangle verte shaders");
+            spdlog::error("Error when building the mesh verte shaders");
             return false;
         }
 
@@ -382,19 +384,25 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
     }
 
     {
+        VkPushConstantRange buffer_range = {
+            .offset = 0u,
+            .size = sizeof(sMeshPushConstant),
+            .stageFlags = VK_SHADER_STAGE_VERTEX
+        };
+
         VkPipelineLayoutCreateInfo layout_create_info = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
             .setLayoutCount = 0u,
             .pSetLayouts = nullptr,
-            .pushConstantRangeCount = 0u,
-            .pPushConstantRanges = nullptr
+            .pushConstantRangeCount = 1u,
+            .pPushConstantRanges = &buffer_range
         };
 
         if (vkCreatePipelineLayout( device, 
                                     &layout_create_info,
                                     nullptr,
-                                    &instance.render_triangle_pipeline_layout) != VK_SUCCESS) {
+                                    &instance.render_mesh_pipeline_layout) != VK_SUCCESS) {
             spdlog::error("Error creating render pipeline layout" );
 
             return false;
@@ -415,7 +423,7 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         builder.disable_blending();
         builder.add_color_attachment_format(instance.draw_image.format);
 
-        instance.render_triangle_pipeline = builder.build(device, instance.render_triangle_pipeline_layout);
+        instance.render_triangle_pipeline = builder.build(device, instance.render_mesh_pipeline);
     }
 
     // TODO add to deletion queue of the pipeline layout and the pipeline
@@ -425,5 +433,50 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         vkDestroyShaderModule(device, triangle_frag_shader, nullptr);
     }
 
+    return true;
+}
+
+bool initialize_mesh_pipelines(Render::sBackend &instance) {
+    sVertex rectangle_vertices[4u] = {
+        {
+            .position = {0.5f, -0.5f, 0.0f},
+            .uv_x = 0.0f,
+            .normal = {},
+            .uv_y = 0.0f,
+            .color = {0.0f, 0.0f, 0.0f, 1.0f}
+        },
+        {
+            .position = {0.5f, 0.5f, 0.0f},
+            .uv_x = 0.0f,
+            .normal = {},
+            .uv_y = 0.0f,
+            .color = {0.5f, 0.5f, 0.5f, 1.0f}
+        },
+        {
+            .position = {-0.5f, -0.5f, 0.0f},
+            .uv_x = 0.0f,
+            .normal = {},
+            .uv_y = 0.0f,
+            .color = {1.0f, 0.0f, 0.0f, 1.0f}
+        },
+        {
+            .position = {-0.5f, 0.5f, 0.0f},
+            .uv_x = 0.0f,
+            .normal = {},
+            .uv_y = 0.0f,
+            .color = {0.0f, 1.0f, 0.0f, 1.0f}
+        }
+    };
+
+    uint32_t rectangle_indices[6u] = {
+        0u, 1u, 2u, 2u, 1u, 3u
+    };
+
+    instance.rectangle_mesh = instance.create_gpu_mesh( rectangle_mesh, 
+                                                        6u,
+                                                        rectangle_vertices, 
+                                                        4u, 
+                                                        instance.get_current_frame()    );
+    // TODO: deletion of the mesh
     return true;
 }

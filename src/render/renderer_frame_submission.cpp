@@ -10,7 +10,7 @@
 
 #define VK_TIMEOUT 10000000u
 
-void resolve_staging_buffers(Render::sBackend &instance, sFrame &current_frame);
+void resolve_staging_buffers(Render::sBackend &instance, Render::sFrame &current_frame);
 
 void Render::sBackend::start_frame_capture() {
     sFrame &current_frame = get_current_frame();
@@ -133,7 +133,7 @@ void Render::sBackend::clean_prev_frame() {
         return;
     }
 
-    sFrame &prev_frame = in_flight_frames[(frame_number - 1u) % FRAME_BUFFER_COUNT]
+    sFrame &prev_frame = in_flight_frames[(frame_number - 1u) % FRAME_BUFFER_COUNT];
 
     for(uint32_t i = 0u; i < prev_frame.staging_buffer_count; i++) {
         clean_buffer(prev_frame.staging_buffers[i]);
@@ -142,7 +142,7 @@ void Render::sBackend::clean_prev_frame() {
 
 
 void resolve_staging_buffers(   Render::sBackend &instance, 
-                                sFrame &current_frame) {
+                                Render::sFrame &current_frame) {
     // TODO: group calls by staging buffer
     // TODO: use just a big staging buffer, per frame, and only delete it if there is an increase in storage size
     for(uint32_t i = 0u; i < current_frame.staging_to_resolve_count; i++) {

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "vk_helpers.h"
+#include "gpu_mesh.h"
 
 void clear_screen(Render::sBackend &renderer);
 void render_background(Render::sBackend &renderer);
@@ -110,9 +111,15 @@ void render_geometry(Render::sBackend &renderer) {
 
         vkCmdSetScissor(current_frame.cmd_buffer, 0u, 1u, &scissor);
     }
+    
+    sMeshPushConstant push_constants = {
+        .mvp_matrix = glm::mat4{1.0f},
+        .vertex_buffer = rectangle_mesh.vertex_buffer_address
+    };
 
-    vkCmdDraw(current_frame.cmd_buffer, 3u, 1u, 0u, 0u);
+    vkCmdPushConstants(current_frame.cmd_buffer, render_mesh_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0u, sizeof(sMeshPushConstant), &push_constants);
+    vkCmdBindIndexBuffer(current_frame.cmd_buffer, rectangle_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32)
+    vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u);
 
     vkCmdEndRendering(current_frame.cmd_buffer);
-     
 }

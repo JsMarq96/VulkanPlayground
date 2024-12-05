@@ -81,8 +81,13 @@ namespace Render {
         VkPipeline              gradient_draw_compute_pipeline;
         VkPipelineLayout        gradient_draw_compute_pipeline_layout;
 
-        VkPipeline              render_triangle_pipeline;
-        VkPipelineLayout        render_triangle_pipeline_layout;
+        // VkPipeline              render_triangle_pipeline;
+        // VkPipelineLayout        render_triangle_pipeline_layout;
+
+        sGPUMesh                rectangle_mesh;
+
+        VkPipeline              render_mesh_pipeline;
+        VkPipelineLayout        render_mesh_pipeline_layout;
 
         struct sSwapchainData {
             VkFormat        format;
