@@ -21,11 +21,13 @@ struct sStack {
     uint32_t top_pointer = 0u;
     uint16_t curr_stack_pointer = 0u;
 
-    void init() {
-        list_count = 1u;
-        arena_lists = (sTinyStack**) malloc(sizeof(sTinyStack*));
+    uint64_t element_count = 0u;
 
-        arena_lists[arena_count-1u] = (sTinyStack*) malloc(sizeof(sTinyStack));
+    void init() {
+        stack_count = 1u;
+        stack_lists = (sTinyStack**) malloc(sizeof(sTinyStack*));
+
+        stack_lists[0u] = (sTinyStack*) malloc(sizeof(sTinyStack));
     }
 
     void clean() {
@@ -34,10 +36,12 @@ struct sStack {
         }
 
         free(stack_lists);
+
+        element_count = 0u;
     };
 
     inline uint32_t size() const {
-        return curr_stack_pointer * N + top_pointer;
+        return curr_stack_pointer * ARENA_SIZE + top_pointer;
     }
 
     inline void push(const T& to_add) {
@@ -53,6 +57,8 @@ struct sStack {
         }
 
         const uint32_t id_to_push = top_pointer++;
+
+        element_count++;
 
         stack_lists[curr_stack_pointer][id_to_push] = to_add;
     }
@@ -80,6 +86,8 @@ struct sStack {
         } else {
             top_pointer--;
         }
+
+        element_count--;
 
         return curr_top;
     }

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "stack.h"
+
 /**
 * First implementation of an arena memory allocator
 * The idea is O(1) indexing, O(1) insertions and O(1) deletions. Depending on the arena sizes cache coherency might or might not suffer
@@ -18,8 +20,7 @@ struct sArenaList {
         T elements[N];
     };
 
-    uint32_t empty_index_top = 0u;
-    uint32_t empty_index_buffer[N * 2u];
+    sStack<uint64_t, N> empty_index_stack = {};
 
     uint16_t arena_count = 0u;
     sSmallArena **arena_lists = nullptr;
@@ -33,46 +34,49 @@ struct sArenaList {
 
     inline bool add_arena() {
         arena_count++;
+
+        // This could be better with a linked list, but i dont expect it to happen a lot...
         arena_lists = (sSmallArena**) realloc(arena_lists, arena_count * sizeof(sSmallArena*));
 
-        const uint32_t arena_idx = (arena_count-1u) << 16u;
+        const uint64_t arena_idx = (arena_count-1u) << 32u;
         arena_lists[arena_count-1u] = (sSmallArena*) malloc(sizeof(sSmallArena));
 
-        for(uint16_t i = 0u; i < N; i++) {
-            empty_index_buffer[empty_index_top++] = arena_idx | i;
+        for(uint32_t i = 0u; i < N; i++) {
+            empty_index_stack.push(arena_idx | i);
         }
-
         return true; // TODO asserts
     }
 
-    inline T& get(const uint32_t idx) const {
-        const uint16_t arena_idx = 0x0FFFu & (idx << 16u);
-        const uint16_t in_arena_idx = (idx & 0xFFFFu);
+    inline T& get(const uint64_t idx) const {
+        const uint16_t arena_idx = idx >> 32u;
+        const uint16_t in_arena_idx = (idx & 0xFFFFFFFFu);
 
-        if (arena_count < arena_idx) {
+        if (arena_count < arena_idx || in_arena_idx <= N) {
             // Error!
         }
 
         return arena_lists[arena_idx]->elements[in_arena_idx];
     }
 
-    inline uint32_t store(T &new_element) {
-        if (empty_index_top == 0u)  {
-            if (add_arena()) {
+    inline uint64_t store(T &new_element) {
+        if (empty_index_stack.element_count == 0u)  {
+            if (!add_arena()) {
                 // Error
             }
         }
 
-        const uint32_t new_elem_idx = empty_index_buffer[empty_index_top];
-        const uint16_t arena_idx = 0x0FFFu & (new_elem_idx << 16u);
-        const uint16_t in_arena_idx = (new_elem_idx & 0xFFFFu);
+        const uint64_t new_elem_idx = empty_index_stack.pop();
+        const uint16_t arena_idx = new_elem_idx >> 32u;
+        const uint16_t in_arena_idx = (new_elem_idx & 0xFFFFFFFFu);
 
         arena_lists[arena_idx]->elements[in_arena_idx] = new_element;
 
         return new_elem_idx;
     }
 
-    inline void remove(const uint32_t idx) {
-        empty_index_buffer[empty_index_top++] = idx;
+    inline void remove(const uint64_t idx) {
+        empty_index_stack.push(idx);
+
+        // TODO: remove arena?? with what frequency??
     }
 };
