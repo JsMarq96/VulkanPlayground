@@ -385,9 +385,9 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
 
     {
         VkPushConstantRange buffer_range = {
+            .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
             .offset = 0u,
-            .size = sizeof(sMeshPushConstant),
-            .stageFlags = VK_SHADER_STAGE_VERTEX
+            .size = sizeof(Render::sMeshPushConstant),
         };
 
         VkPipelineLayoutCreateInfo layout_create_info = {
@@ -423,7 +423,7 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         builder.disable_blending();
         builder.add_color_attachment_format(instance.draw_image.format);
 
-        instance.render_triangle_pipeline = builder.build(device, instance.render_mesh_pipeline);
+        instance.render_mesh_pipeline = builder.build(device, instance.render_mesh_pipeline_layout);
     }
 
     // TODO add to deletion queue of the pipeline layout and the pipeline
@@ -437,7 +437,7 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
 }
 
 bool initialize_mesh_pipelines(Render::sBackend &instance) {
-    sVertex rectangle_vertices[4u] = {
+    Render::sVertex rectangle_vertices[4u] = {
         {
             .position = {0.5f, -0.5f, 0.0f},
             .uv_x = 0.0f,
@@ -472,11 +472,12 @@ bool initialize_mesh_pipelines(Render::sBackend &instance) {
         0u, 1u, 2u, 2u, 1u, 3u
     };
 
-    instance.rectangle_mesh = instance.create_gpu_mesh( rectangle_mesh, 
-                                                        6u,
-                                                        rectangle_vertices, 
-                                                        4u, 
-                                                        instance.get_current_frame()    );
+    instance.create_gpu_mesh(   &instance.rectangle_mesh,
+                                rectangle_indices, 
+                                6u,
+                                rectangle_vertices, 
+                                4u, 
+                                instance.get_current_frame()    );
     // TODO: deletion of the mesh
     return true;
 }

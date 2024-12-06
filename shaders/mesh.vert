@@ -12,9 +12,9 @@ struct sVertex {
     vec4 color;
 };
 
-location(buffer_reference, std430) readonly buffer VertexBuffer {
+layout(buffer_reference, std430) readonly buffer VertexBuffer {
     sVertex vertices[];
-}
+};
 
 layout(push_constant) uniform constants {
     mat4 mvp_matrix;
@@ -25,6 +25,6 @@ void main() {
     sVertex v = PushConstants.vertex_buffer.vertices[gl_VertexIndex];
 
     gl_Position = PushConstants.mvp_matrix * vec4(v.position, 1.0f);
-    out_color = v.color;
+    out_color = v.color.xyz;
     out_uv = vec2(v.uv_x, v.uv_y);
 }

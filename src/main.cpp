@@ -10,6 +10,8 @@
 #include "render/renderer.h"
 #include "render/vk_helpers.h"
 
+#include "resource_manager.h"
+
 int main() {
     spdlog::info("Initalizing render");
 

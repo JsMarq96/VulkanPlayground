@@ -84,7 +84,7 @@ void render_geometry(Render::sBackend &renderer) {
 
     vkCmdBeginRendering(current_frame.cmd_buffer, &render_info);
 
-    vkCmdBindPipeline(current_frame.cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.render_triangle_pipeline);
+    vkCmdBindPipeline(current_frame.cmd_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer.render_mesh_pipeline);
 
     // Set viewport
     {
@@ -112,14 +112,14 @@ void render_geometry(Render::sBackend &renderer) {
         vkCmdSetScissor(current_frame.cmd_buffer, 0u, 1u, &scissor);
     }
     
-    sMeshPushConstant push_constants = {
+    Render::sMeshPushConstant push_constants = {
         .mvp_matrix = glm::mat4{1.0f},
-        .vertex_buffer = rectangle_mesh.vertex_buffer_address
+        .vertex_buffer = renderer.rectangle_mesh.vertex_buffer_address
     };
 
-    vkCmdPushConstants(current_frame.cmd_buffer, render_mesh_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0u, sizeof(sMeshPushConstant), &push_constants);
-    vkCmdBindIndexBuffer(current_frame.cmd_buffer, rectangle_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32)
-    vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u);
+    vkCmdPushConstants(current_frame.cmd_buffer, renderer.render_mesh_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0u, sizeof(Render::sMeshPushConstant), &push_constants);
+    vkCmdBindIndexBuffer(current_frame.cmd_buffer, renderer.rectangle_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32);
+    vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u, 0u);
 
     vkCmdEndRendering(current_frame.cmd_buffer);
 }

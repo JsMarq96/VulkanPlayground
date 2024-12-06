@@ -106,9 +106,9 @@ namespace Render {
 
         sGPUBuffer create_buffer(const size_t buffer_size, const VkBufferUsageFlags usage, const VmaMemoryUsage mem_usage, const bool mapped_on_startup = false);
         void clean_buffer(const sGPUBuffer &buffer);
-        void upload_to_gpu(const void* data, const size_t upload_size, const sGPUBuffer *dst_buffer, const size_t dst_offset, sFrame &frame_to_upload);
+        void upload_to_gpu(const void* data, const size_t upload_size, sGPUBuffer *dst_buffer, const size_t dst_offset, sFrame &frame_to_upload);
 
-        sGPUMesh create_gpu_mesh(const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count, sFrame &frame_to_arrive);
+        bool create_gpu_mesh(Render::sGPUMesh *new_mesh, const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count, sFrame &frame_to_arrive);
 
         inline sFrame& get_current_frame() { 
             return in_flight_frames[frame_number % FRAME_BUFFER_COUNT]; 
