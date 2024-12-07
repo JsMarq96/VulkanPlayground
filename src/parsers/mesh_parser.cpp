@@ -102,7 +102,7 @@ uint32_t Parsers::gltf_to_mesh(const char* gltf_file_dir, const char* gltf_direc
                                     mesh_index_count, 
                                     tmp_vertex_buffer, 
                                     mesh_vertex_count, 
-                                    frame_to_upload);
+                                    frame_to_upload );
     }
 
     free(tmp_index_buffer);

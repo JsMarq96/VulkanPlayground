@@ -49,6 +49,9 @@ namespace Render {
 
         uint32_t            staging_buffer_count = 0u;
         sGPUBuffer          staging_buffers[MAX_STAGING_BUFFER_COUNT] = {};
+
+        uint32_t            staging_to_clean_count = 0u;
+        sGPUBuffer          staging_to_clean[MAX_STAGING_BUFFER_COUNT] = {};
     };
 
     struct sQueueData {
@@ -122,7 +125,7 @@ namespace Render {
 
         void start_frame_capture();
         void end_frame_capture();
-        void clean_prev_frame();
+        void clean_prev_staging_buffers(  Render::sFrame &current_frame  );
 
         void render();
 

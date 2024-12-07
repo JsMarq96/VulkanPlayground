@@ -51,7 +51,7 @@ void Render::sBackend::start_frame_capture() {
     resolve_staging_buffers(*this, current_frame);
 
     // Clean the previous frame's staging buffers
-    clean_prev_frame();
+    clean_prev_staging_buffers(current_frame);
 
     // Set the swapchain into general mode
     // TODO: check other iamge layouts, more effectives for rendering
@@ -128,19 +128,11 @@ void Render::sBackend::end_frame_capture() {
     frame_number++;
 }
 
-void Render::sBackend::clean_prev_frame() {
-    if (frame_number == 0u) {
-        return;
+void Render::sBackend::clean_prev_staging_buffers(  Render::sFrame &current_frame  ) {
+    for(uint32_t i = 0u; i < current_frame.staging_to_clean_count; i++) {
+        clean_buffer(current_frame.staging_to_clean[i]);
     }
-
-    // TODO: Only clean after submit!
-    sFrame &prev_frame = in_flight_frames[(frame_number - 2u) % FRAME_BUFFER_COUNT];
-
-    // for(uint32_t i = 0u; i < prev_frame.staging_buffer_count; i++) {
-    //     clean_buffer(prev_frame.staging_buffers[i]);
-    // }
 }
-
 
 void resolve_staging_buffers(   Render::sBackend &instance, 
                                 Render::sFrame &current_frame) {
@@ -162,5 +154,11 @@ void resolve_staging_buffers(   Render::sBackend &instance,
                         &region);
     }
 
+    for(uint32_t i = 0u; i < current_frame.staging_buffer_count; i++) {
+        current_frame.staging_to_clean[i] = current_frame.staging_buffers[i];     
+    }
+
+    current_frame.staging_to_clean_count = current_frame.staging_buffer_count;
+    current_frame.staging_buffer_count = 0u;
     current_frame.staging_to_resolve_count = 0u;
 }
