@@ -106,6 +106,8 @@ bool Render::sBackend::create_gpu_mesh( Render::sGPUMesh *new_mesh,
     upload_to_gpu(indices, index_buffer_size, &new_mesh->index_buffer, 0u, frame_to_arrive);
     upload_to_gpu(vertices, vertex_buffer_size, &new_mesh->vertex_buffer, 0u, frame_to_arrive);
 
+    new_mesh->index_count = index_count;
+
     // TODO: error management
     return true;
 }

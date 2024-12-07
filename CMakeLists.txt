@@ -57,18 +57,23 @@ add_subdirectory(libraries/spdlog)
 
 add_subdirectory(libraries/VMA)
 
+add_subdirectory(libraries/fastgltf)
+
 find_package(Vulkan REQUIRED)
 
-target_link_libraries(VulkanPlayground glm glfw vk-bootstrap spdlog::spdlog GPUOpen::VulkanMemoryAllocator ${Vulkan_LIBRARIES})
+target_link_libraries(VulkanPlayground glm fastgltf glfw vk-bootstrap spdlog::spdlog GPUOpen::VulkanMemoryAllocator ${Vulkan_LIBRARIES})
 
 include_directories(${Vulkan_INCLUDE_DIR} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCES} ${SUBFOLDER_H_SOURCES} ${SUBFOLDER_C_SOURCES} ${SUBFOLDER_CPP_SOURCES})
 
 # Custom commands
 
-# Copy Shaders folder to binary path
+# Copy Shaders & resources to folder to binary path
 add_custom_command(	TARGET VulkanPlayground POST_BUILD
                    	COMMAND ${CMAKE_COMMAND} -E copy_directory
                     ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/shaders)
+add_custom_command(	TARGET VulkanPlayground POST_BUILD
+					COMMAND ${CMAKE_COMMAND} -E copy_directory
+				 ${CMAKE_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources)
 
 
 # Parallel build
