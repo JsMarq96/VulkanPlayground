@@ -13,6 +13,8 @@
 #define MAX_STAGING_BUFFER_COUNT 30u
 #define MAX_STAGING_BUFFER_RESOLVE_COUNT (MAX_STAGING_BUFFER_COUNT * 4u)
 
+#define MAX_MESH_COUNT 30u
+
 struct GLFWwindow;
 
 namespace Render {
@@ -98,6 +100,10 @@ namespace Render {
         } swapchain_data;
 
         sImage              draw_image;
+
+        // Renderables
+        uint32_t            mesh_count = 0u;
+        sGPUMesh            meshes[MAX_MESH_COUNT] = {};
 
         bool create_swapchain(const uint32_t width, const uint32_t height, const VkFormat format, sSwapchainData &swapchain_data);
         void destroy_swapchain(sSwapchainData &swapchain_data);

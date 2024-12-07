@@ -6,9 +6,13 @@ layout(location = 1) out vec2 out_uv;
 
 struct sVertex {
     vec3 position;
-    float uv_x;
+    float pad1;
     vec3 normal;
-    float uv_y;
+    float pad2;
+    vec2 uv;
+    vec2 pad3;
+    vec3 tangent;
+    float pad0;
     vec4 color;
 };
 
@@ -26,5 +30,5 @@ void main() {
 
     gl_Position = PushConstants.mvp_matrix * vec4(v.position, 1.0f);
     out_color = v.color.xyz;
-    out_uv = vec2(v.uv_x, v.uv_y);
+    out_uv = v.uv;
 }

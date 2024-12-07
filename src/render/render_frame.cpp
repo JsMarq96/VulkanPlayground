@@ -121,5 +121,17 @@ void render_geometry(Render::sBackend &renderer) {
     vkCmdBindIndexBuffer(current_frame.cmd_buffer, renderer.rectangle_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32);
     vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u, 0u);
 
+    for(uint32_t i = 0u; i < renderer.mesh_count; i++) {
+        const Render::sGPUMesh &curr_mesh = renderer.meshes[i];
+        Render::sMeshPushConstant push_constants = {
+            .mvp_matrix = glm::mat4{1.0f},
+            .vertex_buffer = curr_mesh.vertex_buffer_address
+        };
+
+        vkCmdPushConstants(current_frame.cmd_buffer, renderer.render_mesh_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0u, sizeof(Render::sMeshPushConstant), &push_constants);
+        vkCmdBindIndexBuffer(current_frame.cmd_buffer, curr_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32);
+        vkCmdDrawIndexed(current_frame.cmd_buffer, curr_mesh.index_count, 1u, 0u, 0u, 0u);
+    }
+
     vkCmdEndRendering(current_frame.cmd_buffer);
 }

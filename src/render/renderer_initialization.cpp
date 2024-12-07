@@ -6,6 +6,7 @@
 #include <vk_mem_alloc.h>
 #include <VkBootstrap.h>
 
+#include "../parsers/mesh_parser.h"
 #include "../common.h"
 #include "vk_helpers.h"
 #include "descriptor_set.h"
@@ -36,7 +37,7 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_mesh_pipelines(*this);
     is_initialized &= initialize_compute_pipelines(*this);
     is_initialized &= initialize_graphics_pipelines(*this);
-
+    
     return is_initialized;
 }
 
@@ -440,30 +441,26 @@ bool initialize_mesh_pipelines(Render::sBackend &instance) {
     Render::sVertex rectangle_vertices[4u] = {
         {
             .position = {0.5f, -0.5f, 0.0f},
-            .uv_x = 0.0f,
             .normal = {},
-            .uv_y = 0.0f,
+            .uv = {0.0f, 0.0f},
             .color = {0.0f, 0.0f, 0.0f, 1.0f}
         },
         {
             .position = {0.5f, 0.5f, 0.0f},
-            .uv_x = 0.0f,
             .normal = {},
-            .uv_y = 0.0f,
+            .uv = {0.0f, 0.0f},
             .color = {0.5f, 0.5f, 0.5f, 1.0f}
         },
         {
             .position = {-0.5f, -0.5f, 0.0f},
-            .uv_x = 0.0f,
             .normal = {},
-            .uv_y = 0.0f,
+            .uv = {0.0f, 0.0f},
             .color = {1.0f, 0.0f, 0.0f, 1.0f}
         },
         {
             .position = {-0.5f, 0.5f, 0.0f},
-            .uv_x = 0.0f,
             .normal = {},
-            .uv_y = 0.0f,
+            .uv = {0.0f, 0.0f},
             .color = {0.0f, 1.0f, 0.0f, 1.0f}
         }
     };
@@ -478,6 +475,9 @@ bool initialize_mesh_pipelines(Render::sBackend &instance) {
                                 rectangle_vertices, 
                                 4u, 
                                 instance.get_current_frame()    );
+
+    instance.mesh_count = Parsers::gltf_to_mesh("../resources/test_meshes.glb", "../resources/", instance.meshes, &instance, instance.get_current_frame());
+
     // TODO: deletion of the mesh
     return true;
 }
