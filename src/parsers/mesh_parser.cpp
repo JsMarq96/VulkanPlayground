@@ -80,10 +80,21 @@ uint32_t Parsers::gltf_to_mesh(const char* gltf_file_dir, const char* gltf_direc
                         tmp_vertex_buffer[buffer_idx].normal = pos;
                         tmp_vertex_buffer[buffer_idx].color = {pos.x, pos.y, pos.z, 1.0f};
                     });
+            fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, gltf.accessors[p.findAttribute("TANGENT")->accessorIndex],
+                    [&tmp_vertex_buffer](glm::vec3 tan, size_t buffer_idx) {
+                        tmp_vertex_buffer[buffer_idx].tangent = tan;
+                    });
             fastgltf::iterateAccessorWithIndex<glm::vec2>(gltf, gltf.accessors[p.findAttribute("TEXCOORD_0")->accessorIndex],
                     [&tmp_vertex_buffer](glm::vec2 uv, size_t buffer_idx) {
                         tmp_vertex_buffer[buffer_idx].uv = uv;
                     });
+            fastgltf::Attribute *vertex_color = p.findAttribute("COLOR_0");
+            if (vertex_color) {
+                fastgltf::iterateAccessorWithIndex<glm::vec3>(gltf, gltf.accessors[vertex_color->accessorIndex],
+                    [&tmp_vertex_buffer](glm::vec3 color, size_t buffer_idx) {
+                        tmp_vertex_buffer[buffer_idx].color = glm::vec4(color, 1.0f);
+                    });
+            }
         }
 
         renderer->create_gpu_mesh(  &meshes_to_fill[mesh_count++], 

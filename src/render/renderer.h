@@ -56,7 +56,7 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_3/mesh_buffers/
+    // https://vkguide.dev/docs/new_chapter_3/loading_meshes/
    
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;

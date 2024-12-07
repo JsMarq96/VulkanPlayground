@@ -24,7 +24,7 @@ struct sResourceManager {
     sArenaList<sImage, 100u> gpu_image_arena;
 
     static inline eResourceType get_resource_type(const ResourceId_t id) {
-        return (eResourceType)((uint8_t) id >> 57u);
+        return (eResourceType)(uint8_t)(id >> 56u);
     }
 
     static inline uint64_t get_resource_area_idx(const ResourceId_t id) {
