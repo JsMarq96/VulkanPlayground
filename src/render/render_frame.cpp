@@ -77,12 +77,16 @@ void render_geometry(Render::sBackend &renderer) {
                                         VK_IMAGE_LAYOUT_GENERAL, 
                                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     
-    
     VkRenderingAttachmentInfo color_attachment_info = VK_Helpers::attachment_info(  renderer.draw_image.image_view, 
                                                                                     nullptr, 
                                                                                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    VkRenderingAttachmentInfo depth_attachment_info = VK_Helpers::depth_attachment_create_info( renderer.depth_image.image_view, 
+                                                                                                VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
     
-    VkRenderingInfo render_info = VK_Helpers::create_render_info(renderer.swapchain_data.extent, &color_attachment_info, nullptr);
+    VkRenderingInfo render_info = VK_Helpers::create_render_info(   renderer.swapchain_data.extent, 
+                                                                    &color_attachment_info, 
+                                                                    &depth_attachment_info  );
 
     vkCmdBeginRendering(current_frame.cmd_buffer, &render_info);
 
@@ -124,8 +128,8 @@ void render_geometry(Render::sBackend &renderer) {
     vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u, 0u);
 
     // Compute view & projection matrix
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.width, 0.1f, 10.0f);
+    glm::mat4 view = glm::lookAt(glm::vec3(6.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.width, 0.01f, 10.0f);
     projection[1][1] *= -1.0f;
     
     for(uint32_t i = 0u; i < renderer.mesh_count; i++) {

@@ -162,10 +162,19 @@ bool initialize_swapchain(Render::sBackend &instance) {
         1u
     };
 
-    instance.draw_image = instance.create_image(VK_FORMAT_R16G16B16A16_SFLOAT,
-                                                image_usages, 
-                                                VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 
-                                                draw_image_extent);
+    instance.draw_image = instance.create_image(    VK_FORMAT_R16G16B16A16_SFLOAT,
+                                                    image_usages, 
+                                                    VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 
+                                                    draw_image_extent   );
+    
+    // Depth buffer
+    VkImageUsageFlags depth_uses = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
+    instance.depth_image = instance.create_image(   VK_FORMAT_D32_SFLOAT, 
+                                                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+                                                    VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), 
+                                                    draw_image_extent, 
+                                                    VK_IMAGE_ASPECT_DEPTH_BIT   );
 
     return true;
 }
@@ -417,8 +426,9 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         builder.set_topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         builder.set_polygon_mode(VK_POLYGON_MODE_FILL);
         builder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
-        builder.set_depth_format(VK_FORMAT_UNDEFINED);
+        builder.set_depth_format(instance.depth_image.format);
         builder.set_stencil_format(VK_FORMAT_UNDEFINED);
+        builder.enable_depth_test(true, VK_COMPARE_OP_LESS);
         builder.disable_multisampling();
         builder.disable_depth_test();
         builder.disable_blending();

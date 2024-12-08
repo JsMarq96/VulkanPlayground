@@ -60,6 +60,7 @@ namespace Render {
     };
 
     // https://vkguide.dev/docs/new_chapter_3/loading_meshes/
+    // next: depth buffer
    
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;
@@ -103,6 +104,7 @@ namespace Render {
         } swapchain_data;
 
         sImage              draw_image;
+        sImage              depth_image;
 
         // Renderables
         uint32_t            mesh_count = 0u;

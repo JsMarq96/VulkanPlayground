@@ -26,6 +26,7 @@ namespace VK_Helpers {
     VkImageSubresourceRange image_subresource_range(const VkImageAspectFlags aspect_flags = 0u);
     VkImageCreateInfo image2D_create_info(const VkFormat format, const VkImageUsageFlags usage_flags, const VkExtent3D extent, const bool use_on_CPU = false);
     VkImageViewCreateInfo image_view2D_create_info(const VkFormat format, const VkImage &image, const VkImageAspectFlags &aspect_flags);
+    VkRenderingAttachmentInfo depth_attachment_create_info(const VkImageView view, const VkImageLayout layout);
     // TODO: copy also with vkCmdCopyImage (more perfomant)
     void copy_image_image(const VkCommandBuffer cmd, const VkImage src, const VkExtent3D src_size, const VkImage dst, const VkExtent3D dst_size);
 

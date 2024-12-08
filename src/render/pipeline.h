@@ -64,6 +64,8 @@ namespace Render {
 
         void add_color_attachment_format(const VkFormat format);
 
+        void enable_depth_test(const bool depth_write_enable, const VkCompareOp op);
+
         void disable_depth_test();
         void disable_multisampling();
         void disable_blending();

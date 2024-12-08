@@ -176,6 +176,22 @@ VkImageViewCreateInfo VK_Helpers::image_view2D_create_info( const VkFormat forma
     };
 }
 
+VkRenderingAttachmentInfo VK_Helpers::depth_attachment_create_info( const VkImageView view, 
+                                                                    const VkImageLayout layout) {
+    return {
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = view,
+        .imageLayout = layout,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .clearValue = {
+            .depthStencil = {
+                .depth = 1.0f // FAR
+            }
+        }
+    };
+}
 
 void VK_Helpers::copy_image_image(  const VkCommandBuffer cmd, 
                                     const VkImage src, 

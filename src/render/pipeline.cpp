@@ -149,6 +149,24 @@ void sGraphicsPipelineBuilder::set_stencil_format(const VkFormat format) {
     enabled_flags |= CONFIGURED_STENCIL_FORMAT;
 }
 
+void sGraphicsPipelineBuilder::enable_depth_test(const bool depth_write_enable, const VkCompareOp op) {
+    depth_stencil_state = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .depthTestEnable = VK_TRUE,
+        .depthWriteEnable = depth_write_enable,
+        .depthCompareOp = op,
+        .depthBoundsTestEnable = VK_FALSE,
+        .stencilTestEnable = VK_FALSE, // TODO
+        .front = {},
+        .back = {},
+        .minDepthBounds = 0.0f, // Unused until depth bounds are enabled
+        .maxDepthBounds = 1.0f
+    };
+
+    enabled_flags |= CONFIGURED_DEPTH_TEST;
+}
+
 void sGraphicsPipelineBuilder::disable_depth_test() {
     depth_stencil_state = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
@@ -161,9 +179,10 @@ void sGraphicsPipelineBuilder::disable_depth_test() {
         .stencilTestEnable = VK_FALSE,
         .front = {},
         .back = {},
-        .minDepthBounds = 0.0f,
+        .minDepthBounds = 0.0f, // Unused until depth bounds are enabled
         .maxDepthBounds = 1.0f        
     };
+
     enabled_flags |= CONFIGURED_DEPTH_TEST;
 }
 void sGraphicsPipelineBuilder::disable_multisampling() {
