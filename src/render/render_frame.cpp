@@ -1,6 +1,8 @@
 #include "renderer.h"
 
-#include <cmath>
+#include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/transform.hpp>
 
 #include "vk_helpers.h"
 #include "gpu_mesh.h"
@@ -121,10 +123,16 @@ void render_geometry(Render::sBackend &renderer) {
     vkCmdBindIndexBuffer(current_frame.cmd_buffer, renderer.rectangle_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32);
     vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u, 0u);
 
+    // Compute view & projection matrix
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.width, 0.1f, 10.0f);
+    projection[1][1] *= -1.0f;
+    
     for(uint32_t i = 0u; i < renderer.mesh_count; i++) {
         const Render::sGPUMesh &curr_mesh = renderer.meshes[i];
+
         Render::sMeshPushConstant push_constants = {
-            .mvp_matrix = glm::mat4{1.0f},
+            .mvp_matrix = projection * view * glm::translate(glm::vec3{ -2.0f + (2.0f * i), 0.0f, 0.0f }),
             .vertex_buffer = curr_mesh.vertex_buffer_address
         };
 
