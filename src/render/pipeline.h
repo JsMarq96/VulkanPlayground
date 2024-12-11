@@ -61,10 +61,11 @@ namespace Render {
         void set_cull_mode(const VkCullModeFlags cull_mode, const VkFrontFace front_face);
         void set_depth_format(const VkFormat format);
         void set_stencil_format(const VkFormat format);
+        void set_depth_test(const bool depth_write_enable, const VkCompareOp op);
+        void set_blending_additive();
+        void set_blending_alphablend();
 
         void add_color_attachment_format(const VkFormat format);
-
-        void enable_depth_test(const bool depth_write_enable, const VkCompareOp op);
 
         void disable_depth_test();
         void disable_multisampling();

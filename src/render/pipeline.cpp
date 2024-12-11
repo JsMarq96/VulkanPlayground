@@ -149,7 +149,7 @@ void sGraphicsPipelineBuilder::set_stencil_format(const VkFormat format) {
     enabled_flags |= CONFIGURED_STENCIL_FORMAT;
 }
 
-void sGraphicsPipelineBuilder::enable_depth_test(const bool depth_write_enable, const VkCompareOp op) {
+void sGraphicsPipelineBuilder::set_depth_test(const bool depth_write_enable, const VkCompareOp op) {
     depth_stencil_state = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         .pNext = nullptr,
@@ -165,6 +165,38 @@ void sGraphicsPipelineBuilder::enable_depth_test(const bool depth_write_enable, 
     };
 
     enabled_flags |= CONFIGURED_DEPTH_TEST;
+}
+
+void sGraphicsPipelineBuilder::set_blending_additive() {
+    // result_color = src * src.alpha + dst * 1.0
+    color_blend_attachment_state = {
+        .blendEnable = VK_TRUE,
+        .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+        .dstColorBlendFactor = VK_BLEND_FACTOR_ONE,
+        .colorBlendOp = VK_BLEND_OP_ADD,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .alphaBlendOp = VK_BLEND_OP_ADD,
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+    };
+
+    enabled_flags |= CONFIGURED_BLENDING;
+}
+
+void sGraphicsPipelineBuilder::set_blending_alphablend() {
+    // result_color = src * src.alpha + dst * (1.0 - src.alpha)
+    color_blend_attachment_state = {
+        .blendEnable = VK_TRUE,
+        .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+        .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .colorBlendOp = VK_BLEND_OP_ADD,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .alphaBlendOp = VK_BLEND_OP_ADD,
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+    };
+
+    enabled_flags |= CONFIGURED_BLENDING;
 }
 
 void sGraphicsPipelineBuilder::disable_depth_test() {

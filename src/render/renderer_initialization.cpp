@@ -428,9 +428,9 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         builder.set_cull_mode(VK_CULL_MODE_NONE, VK_FRONT_FACE_CLOCKWISE);
         builder.set_depth_format(instance.depth_image.format);
         builder.set_stencil_format(VK_FORMAT_UNDEFINED);
-        builder.enable_depth_test(true, VK_COMPARE_OP_LESS);
+        builder.set_depth_test(true, VK_COMPARE_OP_LESS);
         builder.disable_multisampling();
-        builder.disable_blending();
+        builder.set_blending_alphablend();
         builder.add_color_attachment_format(instance.draw_image.format);
 
         instance.render_mesh_pipeline = builder.build(device, instance.render_mesh_pipeline_layout);
