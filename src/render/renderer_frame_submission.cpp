@@ -48,10 +48,10 @@ void Render::sBackend::start_frame_capture() {
 
     const uint32_t swapchain_idx = current_frame.current_swapchain_index;
 
-    resolve_staging_buffers(*this, current_frame);
-
     // Clean the previous frame's staging buffers
     clean_prev_staging_buffers(current_frame);
+
+    resolve_staging_buffers(*this, current_frame);
 
     // Set the swapchain into general mode
     // TODO: check other iamge layouts, more effectives for rendering
@@ -74,8 +74,6 @@ void Render::sBackend::start_frame_capture() {
 
 void Render::sBackend::end_frame_capture() {
     sFrame &current_frame = get_current_frame();
-
-    spdlog::info(" present idx {}", current_frame.current_swapchain_index);
 
     VK_Helpers::transition_image_layout(current_frame.cmd_buffer,
                                         draw_image.image, 
