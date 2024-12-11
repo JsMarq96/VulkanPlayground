@@ -24,6 +24,9 @@ int main() {
     spdlog::info("Starting the render loop");
     while(!glfwWindowShouldClose(renderer.gpu_instance.window)) {
         glfwPollEvents();
+        if (glfwGetWindowAttrib(renderer.gpu_instance.window, GLFW_ICONIFIED) != 0) {
+            continue;
+        }
 
         renderer.render();
     }

@@ -59,8 +59,8 @@ namespace Render {
         uint32_t                    family;
     };
 
-    // https://vkguide.dev/docs/new_chapter_3/loading_meshes/
-    // next: depth buffer
+    // https://vkguide.dev/docs/new_chapter_3/resizing_window/
+    // TODO: window resizing
    
     struct sDeviceInstance {
         GLFWwindow                  *window = nullptr;
@@ -86,9 +86,6 @@ namespace Render {
 
         VkPipeline              gradient_draw_compute_pipeline;
         VkPipelineLayout        gradient_draw_compute_pipeline_layout;
-
-        // VkPipeline              render_triangle_pipeline;
-        // VkPipelineLayout        render_triangle_pipeline_layout;
 
         VkPipeline              render_mesh_pipeline;
         VkPipelineLayout        render_mesh_pipeline_layout;
