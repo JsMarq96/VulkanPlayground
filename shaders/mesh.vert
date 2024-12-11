@@ -29,6 +29,6 @@ void main() {
     sVertex v = PushConstants.vertex_buffer.vertices[gl_VertexIndex];
 
     gl_Position = PushConstants.mvp_matrix * vec4(v.position, 1.0f);
-    out_color = v.color.xyz;
+    out_color = v.color.xyz * 0.5 + 0.5;
     out_uv = v.uv;
 }

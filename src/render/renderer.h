@@ -90,8 +90,6 @@ namespace Render {
         // VkPipeline              render_triangle_pipeline;
         // VkPipelineLayout        render_triangle_pipeline_layout;
 
-        sGPUMesh                rectangle_mesh;
-
         VkPipeline              render_mesh_pipeline;
         VkPipelineLayout        render_mesh_pipeline_layout;
 

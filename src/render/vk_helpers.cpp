@@ -187,7 +187,7 @@ VkRenderingAttachmentInfo VK_Helpers::depth_attachment_create_info( const VkImag
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
         .clearValue = {
             .depthStencil = {
-                .depth = 1.0f // FAR
+                .depth = 10.0f // FAR
             }
         }
     };

@@ -117,19 +117,10 @@ void render_geometry(Render::sBackend &renderer) {
 
         vkCmdSetScissor(current_frame.cmd_buffer, 0u, 1u, &scissor);
     }
-    
-    Render::sMeshPushConstant push_constants = {
-        .mvp_matrix = glm::mat4{1.0f},
-        .vertex_buffer = renderer.rectangle_mesh.vertex_buffer_address
-    };
-
-    vkCmdPushConstants(current_frame.cmd_buffer, renderer.render_mesh_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0u, sizeof(Render::sMeshPushConstant), &push_constants);
-    vkCmdBindIndexBuffer(current_frame.cmd_buffer, renderer.rectangle_mesh.index_buffer.buffer, 0u, VK_INDEX_TYPE_UINT32);
-    vkCmdDrawIndexed(current_frame.cmd_buffer, 6u, 1u, 0u, 0u, 0u);
 
     // Compute view & projection matrix
     glm::mat4 view = glm::lookAt(glm::vec3(6.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::mat4 projection = glm::perspective(glm::radians(70.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.width, 0.01f, 10.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.height, 0.1f, 10.0f);
     projection[1][1] *= -1.0f;
     
     for(uint32_t i = 0u; i < renderer.mesh_count; i++) {

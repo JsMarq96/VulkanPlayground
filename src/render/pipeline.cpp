@@ -161,7 +161,7 @@ void sGraphicsPipelineBuilder::enable_depth_test(const bool depth_write_enable, 
         .front = {},
         .back = {},
         .minDepthBounds = 0.0f, // Unused until depth bounds are enabled
-        .maxDepthBounds = 1.0f
+        .maxDepthBounds = 10.0f
     };
 
     enabled_flags |= CONFIGURED_DEPTH_TEST;
@@ -180,7 +180,7 @@ void sGraphicsPipelineBuilder::disable_depth_test() {
         .front = {},
         .back = {},
         .minDepthBounds = 0.0f, // Unused until depth bounds are enabled
-        .maxDepthBounds = 1.0f        
+        .maxDepthBounds = 10.0f        
     };
 
     enabled_flags |= CONFIGURED_DEPTH_TEST;

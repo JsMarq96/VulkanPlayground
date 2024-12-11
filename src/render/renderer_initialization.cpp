@@ -430,7 +430,6 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         builder.set_stencil_format(VK_FORMAT_UNDEFINED);
         builder.enable_depth_test(true, VK_COMPARE_OP_LESS);
         builder.disable_multisampling();
-        builder.disable_depth_test();
         builder.disable_blending();
         builder.add_color_attachment_format(instance.draw_image.format);
 
@@ -448,44 +447,6 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
 }
 
 bool initialize_mesh_pipelines(Render::sBackend &instance) {
-    Render::sVertex rectangle_vertices[4u] = {
-        {
-            .position = {0.5f, -0.5f, 0.0f},
-            .normal = {},
-            .uv = {0.0f, 0.0f},
-            .color = {0.0f, 0.0f, 0.0f, 1.0f}
-        },
-        {
-            .position = {0.5f, 0.5f, 0.0f},
-            .normal = {},
-            .uv = {0.0f, 0.0f},
-            .color = {0.5f, 0.5f, 0.5f, 1.0f}
-        },
-        {
-            .position = {-0.5f, -0.5f, 0.0f},
-            .normal = {},
-            .uv = {0.0f, 0.0f},
-            .color = {1.0f, 0.0f, 0.0f, 1.0f}
-        },
-        {
-            .position = {-0.5f, 0.5f, 0.0f},
-            .normal = {},
-            .uv = {0.0f, 0.0f},
-            .color = {0.0f, 1.0f, 0.0f, 1.0f}
-        }
-    };
-
-    uint32_t rectangle_indices[6u] = {
-        0u, 1u, 2u, 2u, 1u, 3u
-    };
-
-    instance.create_gpu_mesh(   &instance.rectangle_mesh,
-                                rectangle_indices, 
-                                6u,
-                                rectangle_vertices, 
-                                4u, 
-                                instance.get_current_frame()    );
-
     instance.mesh_count = Parsers::gltf_to_mesh("../resources/test_meshes.glb", "../resources/", instance.meshes, &instance, instance.get_current_frame());
 
     // TODO: deletion of the mesh
