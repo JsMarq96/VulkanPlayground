@@ -44,7 +44,7 @@ bool Render::sBackend::init() {
 bool initialize_window(Render::sDeviceInstance &instance) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     instance.window = glfwCreateWindow(WIN_HEIGHT, WIN_WIDTH, WIN_NAME, nullptr, nullptr);
     
     return !instance.window;
@@ -273,8 +273,8 @@ bool initialize_descriptors(Render::sBackend &instance) {
     // Create render test descriptor set
     instance.draw_image_descritpor_layout = 
         sDescriptorLayoutBuilder::create(instance.gpu_instance.device, VK_SHADER_STAGE_COMPUTE_BIT)
-        .add_biding(0u, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
-        .build();
+            .add_biding(0u, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
+            .build();
     
     instance.draw_image_descriptor_set = instance.global_descritpor_allocator.alloc(instance.draw_image_descritpor_layout);
 

@@ -3,6 +3,21 @@
 #include <vulkan/vulkan.h>
 
 #define MAX_BIDING_COUNT 8u
+#define MAX_DESCRIPTOR_TYPE_COUNT 9u
+#define DESCRIPTOR_POOLS_SIZE 10u
+
+enum eDescriptorTypes : uint32_t {
+    DESCRIPTOR_SAMPLER = VK_DESCRIPTOR_TYPE_SAMPLER,
+    DESCRIPTOR_IMAGE_SAMPLER = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+    DESCRIPTOR_SAMPLED_IMAGE = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+    DESCRIPTOR_STORAGE_IMAGE = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+    DESCRIPTOR_UNIFORM_TEXEL_BUFFER = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,
+    DESCRIPTOR_STORAGE_TEXEL_BUFFER = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,
+    DESCRIPTOR_UNIFORM_BUFFER = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+    DESCRIPTOR_STORAGE_BUFFER = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+    DESCRIPTOR_UNIFORM_BUFFER_DYNAMIC = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+    DESCRIPTOR_STORAGE_BUFFER_DYNAMIC = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC
+};
 
 struct sDescriptorLayoutBuilder {
     // Assemble Descriptor set layouts with the builder pattern
@@ -24,19 +39,32 @@ struct sDescriptorLayoutBuilder {
 };
 
 struct sDSetPoolAllocator {
+    struct sLLNode {
+        sLLNode *next_node = nullptr;
+        VkDescriptorPool pools[DESCRIPTOR_POOLS_SIZE] = {};
+        uint16_t used_pools_count = 0u;
+    };
+
     struct sPoolRatio {
         VkDescriptorType    type;
         uint32_t            ratio;
     };
 
-    VkDescriptorPool pool;
+    VkDescriptorPoolSize  pool_sizes[MAX_DESCRIPTOR_TYPE_COUNT] = {};
+    uint8_t pool_sizes_count = 0u;
+
+    uint32_t max_sets = 0u;
+
+    sLLNode *first_node = nullptr;
+    sLLNode *top_node = nullptr;
+
     VkDevice pool_device;
 
-    void init(const VkDevice device, const uint32_t max_sets, const sPoolRatio* pool_ratios, const uint32_t ratio_count);
+    void init(const VkDevice device, const uint32_t max_sets, const sPoolRatio* pool_ratios, const uint8_t ratio_count);
     void clear_descriptors() const;
     void clean() const;
 
-    VkDescriptorSet alloc(const VkDescriptorSetLayout &layout) const;
+    void move_to_next_pool();
 
-    void alloc(const VkDescriptorSetLayout *layouts, const uint32_t layout_count, VkDescriptorSet* prealloc_result_sets) const;
+    VkDescriptorSet alloc(const VkDescriptorSetLayout &layout);
 };

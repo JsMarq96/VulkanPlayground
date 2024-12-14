@@ -28,13 +28,18 @@ void Render::sBackend::start_frame_capture() {
     // Delete from prev frame
 
     // Get the current swapchain
-    vk_assert_msg(vkAcquireNextImageKHR(gpu_instance.device, 
-                                        swapchain_data.swapchain, 
-                                        VK_TIMEOUT, 
-                                        current_frame.swapchain_semaphore, 
-                                        nullptr, 
-                                        &current_frame.current_swapchain_index),
-                "Error adquiring swapchain image");
+    VkResult swapchain_adquire_result = vkAcquireNextImageKHR(  gpu_instance.device, 
+                                                                swapchain_data.swapchain, 
+                                                                VK_TIMEOUT, 
+                                                                current_frame.swapchain_semaphore, 
+                                                                nullptr, 
+                                                                &current_frame.current_swapchain_index);
+    if (swapchain_adquire_result == VK_ERROR_OUT_OF_DATE_KHR) {
+        // Recreate swapchain
+        // TODO: continue
+    }
+    vk_assert_msg(  swapchain_adquire_result,
+                    "Error adquiring swapchain image");
 
     // Begin the command recording
     // Clean the cmd buffer of the last frame

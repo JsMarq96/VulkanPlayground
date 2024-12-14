@@ -54,77 +54,137 @@ VkDescriptorSetLayout sDescriptorLayoutBuilder::build(  void *next_pointer ) {
 
 // DESCRIPTOR SET POOL ALLOCATOR
 void sDSetPoolAllocator::init(  const VkDevice device, 
-                                const uint32_t max_sets, 
+                                const uint32_t cmax_sets, 
                                 const sDSetPoolAllocator::sPoolRatio* pool_ratios, 
-                                const uint32_t ratio_count ) {
-    pool_device = device;
-    VkDescriptorPoolSize *pool_size = (VkDescriptorPoolSize*) malloc(ratio_count * sizeof(VkDescriptorPoolSize));
+                                const uint8_t ratio_count ) {
+    if (first_node != nullptr) {
+        clean();
+    }
     
+    pool_device = device;
+    max_sets = cmax_sets;
+
+    // Store the pool sizes
     for(uint32_t i = 0u; i < ratio_count; i++) {
-        pool_size[i] = {
+        pool_sizes[i] = {
             .type = pool_ratios[i].type,
             .descriptorCount = max_sets * pool_ratios[i].ratio
         };
     }
+    pool_sizes_count = ratio_count;
+
+    // Init linked list node
+    {
+        first_node = (sLLNode*) malloc(sizeof(sLLNode));
+        first_node->next_node = nullptr;
+        first_node->used_pools_count = 0u;
+        
+        top_node = first_node;
+    }
+
+    // Create the first pool
+    {
+        VkDescriptorPoolCreateInfo pool_info = {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0u,
+            .maxSets = max_sets,
+            .poolSizeCount = pool_sizes_count,
+            .pPoolSizes = pool_sizes
+        };
+
+        vk_assert_msg(  vkCreateDescriptorPool( device, 
+                                                &pool_info, 
+                                                nullptr, 
+                                                &top_node->pools[0]),
+                        "Error creating initial descriptor pool");
+    }
+}
+
+void sDSetPoolAllocator::clear_descriptors() const {
+    sLLNode *it_node = first_node;
+
+    while(it_node != nullptr) {
+        for(uint16_t i = 0; i <= it_node->used_pools_count; i++) {
+            vkResetDescriptorPool(pool_device, it_node->pools[i], 0u);
+        }
+
+        it_node->used_pools_count = 0u;
+        it_node = it_node->next_node;
+    }
+}
+
+void sDSetPoolAllocator::clean() const {
+    sLLNode *it_node = first_node;
+    sLLNode *prev_node = nullptr;
+
+    while(it_node != nullptr) {
+        for(uint16_t i = 0; i <= it_node->used_pools_count; i++) {
+            vkDestroyDescriptorPool(pool_device, it_node->pools[i], nullptr);
+        }
+
+        prev_node = it_node;
+        it_node = it_node->next_node;
+        free(prev_node);
+    }
+}
+
+void sDSetPoolAllocator::move_to_next_pool() {
+    if (top_node->used_pools_count == DESCRIPTOR_POOLS_SIZE - 1u) {
+        sLLNode *new_node = (sLLNode*) malloc(sizeof(sLLNode));
+        new_node->next_node = nullptr;
+        new_node->used_pools_count = 0u;
+
+        top_node->next_node = new_node;
+        top_node = new_node;
+
+        return;
+    }
+
+    top_node->used_pools_count++;
 
     VkDescriptorPoolCreateInfo pool_info = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0u,
         .maxSets = max_sets,
-        .poolSizeCount = ratio_count,
-        .pPoolSizes = pool_size
+        .poolSizeCount = pool_sizes_count,
+        .pPoolSizes = pool_sizes
     };
 
-    vk_assert_msg(  vkCreateDescriptorPool( device, 
+    vk_assert_msg(  vkCreateDescriptorPool( pool_device, 
                                             &pool_info, 
                                             nullptr, 
-                                            &pool),
+                                            &top_node->pools[top_node->used_pools_count]),
                     "Error creating descriptor pool");
-
-    free(pool_size);
 }
 
-void sDSetPoolAllocator::clear_descriptors() const {
-    vkResetDescriptorPool(pool_device, pool, 0u);
-}
-
-void sDSetPoolAllocator::clean() const {
-    vkDestroyDescriptorPool(pool_device, pool, nullptr);
-}
-
-VkDescriptorSet sDSetPoolAllocator::alloc(const VkDescriptorSetLayout &layout) const {
+VkDescriptorSet sDSetPoolAllocator::alloc(const VkDescriptorSetLayout &layout) {
     VkDescriptorSetAllocateInfo alloc_info = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
         .pNext = nullptr,
-        .descriptorPool = pool,
+        .descriptorPool = top_node->pools[0],
         .descriptorSetCount = 1u,
         .pSetLayouts = &layout
     };
 
     VkDescriptorSet descriptor_set;
 
-    vk_assert_msg(  vkAllocateDescriptorSets(   pool_device, 
+    VkResult result = vkAllocateDescriptorSets( pool_device, 
                                                 &alloc_info,
-                                                &descriptor_set), 
-                    "Error allocating a descriptorset");
+                                                &descriptor_set);
+    
+    if (result == VK_ERROR_OUT_OF_POOL_MEMORY || result == VK_ERROR_FRAGMENTED_POOL) {
+        move_to_next_pool();
+
+        alloc_info.descriptorPool = top_node->pools[top_node->used_pools_count];
+
+        result = vkAllocateDescriptorSets(  pool_device, 
+                                            &alloc_info,
+                                            &descriptor_set);
+    }
+    vk_assert_msg(  result, 
+                    "Error allocating a descriptor set (not out of memory or fragmented)");
 
     return descriptor_set;
-}
-
-void sDSetPoolAllocator::alloc( const VkDescriptorSetLayout *layouts, 
-                                const uint32_t layout_count, 
-                                VkDescriptorSet* prealloc_result_sets) const {
-    VkDescriptorSetAllocateInfo alloc_info = {
-        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .pNext = nullptr,
-        .descriptorPool = pool,
-        .descriptorSetCount = layout_count,
-        .pSetLayouts = layouts
-    };
-
-    vk_assert_msg(  vkAllocateDescriptorSets(   pool_device, 
-                                                &alloc_info,
-                                                prealloc_result_sets), 
-                    "Error allocating multiple descriptorsets");
 }
