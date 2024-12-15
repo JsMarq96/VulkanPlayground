@@ -61,6 +61,8 @@ add_subdirectory(libraries/fastgltf)
 
 find_package(Vulkan REQUIRED)
 
+include_directories(libraries/stb)
+
 target_link_libraries(VulkanPlayground glm fastgltf glfw vk-bootstrap spdlog::spdlog GPUOpen::VulkanMemoryAllocator ${Vulkan_LIBRARIES})
 
 include_directories(${Vulkan_INCLUDE_DIR} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCES} ${SUBFOLDER_H_SOURCES} ${SUBFOLDER_C_SOURCES} ${SUBFOLDER_CPP_SOURCES})
