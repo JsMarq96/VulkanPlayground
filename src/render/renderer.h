@@ -31,6 +31,16 @@ namespace Render {
         sGPUBufferView dst_buffer = {};
     };
 
+    struct sGPUSceneGlobalData {
+        glm::mat4   view = {};
+        glm::mat4   proj = {};
+        glm::mat4   view_proj = {};
+        glm::vec4   ambient_color = {};
+        glm::vec3   sunlight_dir = {};
+        float       sun_power = 0.0f;
+        glm::vec4   sunlight_color = {0.0f, 0.0f, 0.0f, 0.0f};
+    };
+
     struct sFrame {
         VkCommandPool       cmd_pool;
         VkCommandBuffer     cmd_buffer;
@@ -52,6 +62,14 @@ namespace Render {
 
         uint32_t            staging_to_clean_count = 0u;
         sGPUBuffer          staging_to_clean[MAX_STAGING_BUFFER_COUNT] = {};
+
+        // In-frame descriptor sets
+        sDSetPoolAllocator  descriptor_allocator = {};
+
+        sGPUSceneGlobalData scene_data;
+
+        sGPUBuffer              gpu_comon_scene_data_buffer;
+        VkDescriptorSet         gpu_comon_scene_descriptor_set;
     };
 
     struct sQueueData {
@@ -59,6 +77,7 @@ namespace Render {
         uint32_t                    family;
     };
 
+    // https://vkguide.dev/docs/new_chapter_4/descriptor_abstractions/
     // https://vkguide.dev/docs/new_chapter_3/resizing_window/
     // TODO: window resizing
    
@@ -80,7 +99,8 @@ namespace Render {
         uint64_t                frame_number = 0u;
         sFrame                  in_flight_frames[FRAME_BUFFER_COUNT];
 
-        sDSetPoolAllocator      global_descritpor_allocator;
+        sDSetPoolAllocator      global_descriptor_allocator = {};
+
         VkDescriptorSet         draw_image_descriptor_set;
         VkDescriptorSetLayout   draw_image_descritpor_layout;
 
@@ -98,8 +118,12 @@ namespace Render {
             VkImageView     image_views[FRAME_BUFFER_COUNT];
         } swapchain_data;
 
-        sImage              draw_image;
-        sImage              depth_image;
+        sImage                  draw_image;
+        sImage                  depth_image;
+
+        // Scene data
+        sGPUSceneGlobalData     scene_global_data;
+        VkDescriptorSetLayout   gpu_comon_scene_data_descriptor_set_layout;
 
         // Renderables
         uint32_t            mesh_count = 0u;

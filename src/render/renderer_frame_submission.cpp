@@ -48,6 +48,13 @@ void Render::sBackend::start_frame_capture() {
     // TODO: Might need to return this flag, if we are in VR (reuse the comand buffer for each eye)
     VkCommandBufferBeginInfo cmd_begin = VK_Helpers::create_cmd_buffer_begin_info(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
+    // Upload the view projection matrices
+    upload_to_gpu(  &scene_global_data, 
+                    sizeof(sGPUSceneGlobalData), 
+                    &current_frame.gpu_comon_scene_data_buffer, 
+                    0u, 
+                    current_frame);
+
     vk_assert_msg(  vkBeginCommandBuffer(current_frame.cmd_buffer, &cmd_begin), 
                     "Error initializing the command buffer");
 
@@ -57,6 +64,8 @@ void Render::sBackend::start_frame_capture() {
     clean_prev_staging_buffers(current_frame);
 
     resolve_staging_buffers(*this, current_frame);
+
+    current_frame.descriptor_allocator.clear_descriptors();
 
     // Set the swapchain into general mode
     // TODO: check other iamge layouts, more effectives for rendering

@@ -16,19 +16,29 @@ struct sVertex {
     vec4 color;
 };
 
+layout(set = 0u, binding = 0u) uniform sSceneData {
+    mat4 view;
+    mat4 proj;
+    mat4 view_proj;
+    vec4 ambient_color;
+    vec3 sunlight_dir;
+    float sun_power;
+    vec4 sunlight_color;
+} scene_data;
+
 layout(buffer_reference, std430) readonly buffer VertexBuffer {
     sVertex vertices[];
 };
 
 layout(push_constant) uniform constants {
-    mat4 mvp_matrix;
+    mat4 model_matrix;
     VertexBuffer vertex_buffer;
 } PushConstants;
 
 void main() {
     sVertex v = PushConstants.vertex_buffer.vertices[gl_VertexIndex];
 
-    gl_Position = PushConstants.mvp_matrix * vec4(v.position, 1.0f);
+    gl_Position = scene_data.view_proj * PushConstants.model_matrix * vec4(v.position, 1.0f);
     out_color = v.color.xyz * 0.5 + 0.5;
     out_uv = v.uv;
 }

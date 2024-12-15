@@ -118,16 +118,20 @@ void render_geometry(Render::sBackend &renderer) {
         vkCmdSetScissor(current_frame.cmd_buffer, 0u, 1u, &scissor);
     }
 
-    // Compute view & projection matrix
-    glm::mat4 view = glm::lookAt(glm::vec3(6.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    glm::mat4 projection = glm::perspective(glm::radians(45.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.height, 0.1f, 10.0f);
-    projection[1][1] *= -1.0f;
+    vkCmdBindDescriptorSets(current_frame.cmd_buffer, 
+                            VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            renderer.render_mesh_pipeline_layout,
+                            0u,
+                            1u,
+                            &current_frame.gpu_comon_scene_descriptor_set,
+                            0u,
+                            nullptr);
     
     for(uint32_t i = 0u; i < renderer.mesh_count; i++) {
         const Render::sGPUMesh &curr_mesh = renderer.meshes[i];
 
         Render::sMeshPushConstant push_constants = {
-            .mvp_matrix = projection * view * glm::translate(glm::vec3{ -2.0f + (2.0f * i), 0.0f, 0.0f }),
+            .mvp_matrix = glm::translate(glm::vec3{ -2.0f + (2.0f * i), 0.0f, 0.0f }),
             .vertex_buffer = curr_mesh.vertex_buffer_address
         };
 

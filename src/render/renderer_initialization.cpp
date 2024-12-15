@@ -264,11 +264,25 @@ bool initialize_memory_alloc(Render::sBackend &instance) {
 };
 
 bool initialize_descriptors(Render::sBackend &instance) {
-    // Create the descriptor pool
-    {
-        sDSetPoolAllocator::sPoolRatio pool_ratios[1u] = {{ .type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, .ratio = 1u}};
-        instance.global_descritpor_allocator.init(instance.gpu_instance.device, 10u, pool_ratios, 1u);
+    // Allocate the descriptor sets for each frame
+    sDSetPoolAllocator::sPoolRatio pool_ratios[4u] = {
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 3u },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 3u },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3u },
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4u }
+    };
+    for(uint8_t i = 0u; i < FRAME_BUFFER_COUNT; i++) {
+        instance.in_flight_frames[i].descriptor_allocator.init( instance.gpu_instance.device, 
+                                                                1000u, 
+                                                                pool_ratios, 
+                                                                4u  );
     }
+
+    // Init the global descriptor pool
+    instance.global_descriptor_allocator.init(  instance.gpu_instance.device, 
+                                                1000u, 
+                                                pool_ratios, 
+                                                4u  );
 
     // Create render test descriptor set
     instance.draw_image_descritpor_layout = 
@@ -276,7 +290,7 @@ bool initialize_descriptors(Render::sBackend &instance) {
             .add_biding(0u, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
             .build();
     
-    instance.draw_image_descriptor_set = instance.global_descritpor_allocator.alloc(instance.draw_image_descritpor_layout);
+    instance.draw_image_descriptor_set = instance.global_descriptor_allocator.alloc(instance.draw_image_descritpor_layout);
 
     // Initialize the descriptor set
     VkDescriptorImageInfo img_info = {
@@ -284,7 +298,7 @@ bool initialize_descriptors(Render::sBackend &instance) {
         .imageLayout = VK_IMAGE_LAYOUT_GENERAL,
     };
 
-    VkWriteDescriptorSet draw_image_write = {
+    VkWriteDescriptorSet draw_image_ds_write = {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
         .pNext = nullptr,
         .dstSet = instance.draw_image_descriptor_set,
@@ -294,7 +308,48 @@ bool initialize_descriptors(Render::sBackend &instance) {
         .pImageInfo = &img_info
     };
 
-    vkUpdateDescriptorSets(instance.gpu_instance.device, 1u, &draw_image_write, 0u, nullptr);
+    // Global scene data ds layout
+    instance.gpu_comon_scene_data_descriptor_set_layout = 
+        sDescriptorLayoutBuilder::create(instance.gpu_instance.device, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+            .add_biding(0u, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+            .build();
+
+    // Create the Global data descriptor sets per frame
+    VkDescriptorBufferInfo buffers_info[FRAME_BUFFER_COUNT] = {};
+    VkWriteDescriptorSet ds_to_update[1 + FRAME_BUFFER_COUNT] = {};
+
+    // One buffer and one descriptor set per each on flight frame
+    for(uint8_t i = 0u; i < FRAME_BUFFER_COUNT; i++) {
+        Render::sFrame &curr_frame = instance.in_flight_frames[i];
+
+        curr_frame.gpu_comon_scene_data_buffer = instance.create_buffer(    sizeof(Render::sGPUSceneGlobalData), 
+                                                                            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
+                                                                            VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+        curr_frame.gpu_comon_scene_descriptor_set = instance.global_descriptor_allocator.alloc(instance.gpu_comon_scene_data_descriptor_set_layout);
+    
+        // Store the data of the DS and the buffer for upload
+        buffers_info[i] = {
+            .buffer = curr_frame.gpu_comon_scene_data_buffer.buffer,
+            .offset = 0u,
+            .range = curr_frame.gpu_comon_scene_data_buffer.alloc_info.size
+        };
+
+        ds_to_update[i] = {
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .pNext = nullptr,
+            .dstSet = curr_frame.gpu_comon_scene_descriptor_set,
+            .dstBinding = 0u,
+            .descriptorCount = 1u,
+            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .pBufferInfo = &buffers_info[i]
+        };
+    }
+
+    ds_to_update[FRAME_BUFFER_COUNT] = draw_image_ds_write;
+
+    vkUpdateDescriptorSets(instance.gpu_instance.device, 1 + FRAME_BUFFER_COUNT, ds_to_update, 0u, nullptr);
+    
     // TODO: Manage this better than asserts!!
     
     // TOODO: destroy pool and descritpor set on the deletion queue
@@ -403,8 +458,8 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
         VkPipelineLayoutCreateInfo layout_create_info = {
             .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
             .pNext = nullptr,
-            .setLayoutCount = 0u,
-            .pSetLayouts = nullptr,
+            .setLayoutCount = 1u,
+            .pSetLayouts = &instance.gpu_comon_scene_data_descriptor_set_layout,
             .pushConstantRangeCount = 1u,
             .pPushConstantRanges = &buffer_range
         };
