@@ -11,15 +11,20 @@ sImage Render::sBackend::create_image(  const VkFormat img_format,
                                         const VkImageUsageFlags usage,
                                         const VkMemoryPropertyFlags mem_flags,
                                         const VkExtent3D& img_dims, 
-                                        const VkImageAspectFlagBits view_flags  ) {
+                                        const VkImageAspectFlagBits view_flags,
+                                        const bool mipmapped) {
     sImage result = {
-        .extent = img_dims,
+        .dims = img_dims,
         .format = img_format,
     };
 
     VkImageCreateInfo img_create_info = VK_Helpers::image2D_create_info(img_format, 
                                                                         usage, 
                                                                         img_dims);
+    if (mipmapped) {
+        img_create_info.mipLevels = glm::floor(glm::log2(glm::max(img_dims.width, img_dims.height))) + 1u;
+    }
+    
     VmaAllocationCreateInfo img_alloc_info = {
         .usage = VMA_MEMORY_USAGE_GPU_ONLY,
         .requiredFlags = mem_flags
@@ -46,6 +51,32 @@ sImage Render::sBackend::create_image(  const VkFormat img_format,
     return result;
 }
 
+sImage Render::sBackend::create_image(void *raw_img_data,
+                                        const VkFormat img_format, 
+                                        const VkImageUsageFlags usage, 
+                                        const VkMemoryPropertyFlags mem_flags, 
+                                        const VkExtent3D& img_dims,
+                                        Render::sFrame &frame_to_upload, 
+                                        const bool mipmapped,
+                                        const VkImageAspectFlagBits view_flags) {
+
+    sImage new_image = create_image(    img_format, 
+                                        usage, 
+                                        mem_flags, 
+                                        img_dims, 
+                                        view_flags,
+                                        mipmapped   );
+
+    upload_to_gpu(  raw_img_data, 
+                    img_dims,
+                    &new_image,
+                    {0u, 0u, 0u},
+                    frame_to_upload );
+    
+    return new_image;
+}
+
+
 Render::sGPUBuffer Render::sBackend::create_buffer( const size_t buffer_size, 
                                                     const VkBufferUsageFlags usage, 
                                                     const VmaMemoryUsage mem_usage, 
@@ -63,6 +94,8 @@ Render::sGPUBuffer Render::sBackend::create_buffer( const size_t buffer_size,
         .flags = (mapped_on_startup) ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0u,
         .usage = mem_usage,
     };
+
+    new_buffer.size = buffer_size;
 
     vk_assert_msg(  vmaCreateBuffer(  vk_allocator, 
                                     &buff_create_info, 
@@ -146,6 +179,45 @@ void Render::sBackend::upload_to_gpu(   const void* data,
             .raw_buffer = gpu_dst_buffer,
             .offset = dst_offset,
             .size = upload_size
+        }
+    };
+}
+
+void Render::sBackend::upload_to_gpu(   const void* data, 
+                                        const glm::ivec3 src_img_size, 
+                                        sImage *gpu_dst_image, 
+                                        const glm::ivec3 dst_pos, 
+                                        Render::sFrame &frame_to_upload ) {
+    assert_msg( frame_to_upload.staging_buffer_count < MAX_STAGING_BUFFER_COUNT, 
+                "Too many staging buffers in a frame!");
+
+    uint32_t staging_idx = frame_to_upload.staging_buffer_count++;
+    frame_to_upload.staging_buffers[staging_idx] = create_buffer(   upload_size,
+                                                                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                                    VMA_MEMORY_USAGE_CPU_ONLY,
+                                                                    true    );
+
+    // Get the mapped address of teh buffer on the CPU
+    void* mapped_staging_buffer;
+    vmaMapMemory(vk_allocator, frame_to_upload.staging_buffers[staging_idx].alloc, &mapped_staging_buffer);
+
+    // Copy the data to the CPU side mapped stating buffer
+    memcpy(mapped_staging_buffer, data, upload_size);
+
+    vmaUnmapMemory(vk_allocator, frame_to_upload.staging_buffers[staging_idx].alloc);
+
+    // Add to the list of the resolves, for when whe have the cmd buffer started n running
+    frame_to_upload.staging_to_resolve[frame_to_upload.staging_to_resolve_count++] = {
+        .dist_is_image = true,
+        .src_buffer = {
+            .raw_buffer = &frame_to_upload.staging_buffers[staging_idx],
+            .offset = 0u,
+            .size = upload_size
+        },
+        .dst_image = {
+            .dst_img = gpu_dst_image,
+            .dst_copy_pos = dst_pos,
+            .img_size = src_img_size
         }
     };
 }

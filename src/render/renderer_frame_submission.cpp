@@ -100,7 +100,7 @@ void Render::sBackend::end_frame_capture() {
 
     VK_Helpers::copy_image_image(   current_frame.cmd_buffer, 
                                     draw_image.image, 
-                                    { draw_image.extent.width, draw_image.extent.height, 1 }, 
+                                    { draw_image.dims.width, draw_image.dims.height, 1 }, 
                                     swapchain_data.images[current_frame.current_swapchain_index], 
                                     { swapchain_data.extent.width, swapchain_data.extent.height, 1 });
 
@@ -160,17 +160,43 @@ void resolve_staging_buffers(   Render::sBackend &instance,
     for(uint32_t i = 0u; i < current_frame.staging_to_resolve_count; i++) {
         Render::sStagingToResolve &to_resolve = current_frame.staging_to_resolve[i];
 
-        VkBufferCopy region = {
-            .srcOffset = to_resolve.src_buffer.offset,
-            .dstOffset = to_resolve.dst_buffer.offset,
-            .size = to_resolve.src_buffer.size,
-        };
+        if (to_resolve.dst_is_image) {
+            // TODO: transition img from generic, to VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+            VkBufferImageCopy copy_region = {
+                .bufferOffset = 0u,
+                .bufferRowLength = 0u,
+                .bufferImageHeight = 0u,
+                .imageSubresource = {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT, //
+                    .mipLevel = 0u,
+                    .baseArrayLayer = 0u,
+                    .layerCount = 1u
+                },
+                .imageExtent = to_resolve.dst_image->dims
+            };
 
-        vkCmdCopyBuffer(current_frame.cmd_buffer, 
-                        to_resolve.src_buffer.raw_buffer->buffer, 
-                        to_resolve.dst_buffer.raw_buffer->buffer, 
-                        1u, 
-                        &region);
+            vkCmdCopyBufferToImage( current_frame.cmd_buffer,
+                                    to_resolve.src_buffer.raw_buffer->buffer,
+                                    to_resolve.dst_image->image,
+                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                    1u,
+                                    &copy_region);
+
+            // TODO: transition from VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        } else {
+            VkBufferCopy region = {
+                .srcOffset = to_resolve.src_buffer.offset,
+                .dstOffset = to_resolve.dst_buffer.offset,
+                .size = to_resolve.src_buffer.size,
+            };
+
+            vkCmdCopyBuffer(current_frame.cmd_buffer, 
+                            to_resolve.src_buffer.raw_buffer->buffer, 
+                            to_resolve.dst_buffer.raw_buffer->buffer, 
+                            1u, 
+                            &region);
+        }
+       
     }
 
     for(uint32_t i = 0u; i < current_frame.staging_buffer_count; i++) {

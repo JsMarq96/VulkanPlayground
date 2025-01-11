@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
@@ -8,6 +9,8 @@ namespace Render {
         VkBuffer buffer;
         VmaAllocation alloc;
         VmaAllocationInfo alloc_info;
+
+        size_t size = 0u;
     };
 
     struct sGPUBufferView {

@@ -332,7 +332,7 @@ bool initialize_descriptors(Render::sBackend &instance) {
         buffers_info[i] = {
             .buffer = curr_frame.gpu_comon_scene_data_buffer.buffer,
             .offset = 0u,
-            .range = curr_frame.gpu_comon_scene_data_buffer.alloc_info.size
+            .range = curr_frame.gpu_comon_scene_data_buffer.size
         };
 
         ds_to_update[i] = {
