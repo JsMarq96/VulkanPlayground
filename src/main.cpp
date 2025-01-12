@@ -14,6 +14,7 @@
 #include "common.h"
 #include "utils.h"
 
+#include "render/resources/camera.h"
 #include "render/renderer.h"
 #include "render/vk_helpers.h"
 
@@ -35,7 +36,10 @@ int main() {
     renderer.scene_global_data.proj = glm::perspective(glm::radians(45.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.height, 0.1f, 10.0f);
     renderer.scene_global_data.proj[1][1] *= -1.0f;
 
-    renderer.scene_global_data.view_proj = renderer.scene_global_data.proj * renderer.scene_global_data.view;
+    // Compute view & projection matrix
+    renderer.scene_global_data.view = camera.view_mat;
+    renderer.scene_global_data.proj = camera.proj_mat;
+    renderer.scene_global_data.view_proj = camera.view_proj_mat;
 
     spdlog::info("Starting the render loop");
     uint32_t i = 0u;
