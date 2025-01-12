@@ -14,6 +14,7 @@
 #include "common.h"
 #include "utils.h"
 
+#include "render/resources/camera.h"
 #include "render/renderer.h"
 #include "render/vk_helpers.h"
 
@@ -25,12 +26,15 @@ int main() {
     Render::sBackend renderer;
     bool success = renderer.init();
 
-    // Compute view & projection matrix
-    renderer.scene_global_data.view = glm::lookAt(glm::vec3(6.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    renderer.scene_global_data.proj = glm::perspective(glm::radians(45.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.height, 0.1f, 10.0f);
-    renderer.scene_global_data.proj[1][1] *= -1.0f;
+    sCamera camera = {};
+    camera.config_view(glm::vec3(6.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    camera.config_projection(glm::radians(45.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.height, 0.1f, 10.0f);
+    //camera.config_oblique_projection(glm::vec4(0.4f, 0.0f, 0.0f, 1.0f), glm::radians(45.f), (float) renderer.swapchain_data.extent.width / (float)renderer.swapchain_data.extent.height, 0.1f, 10.0f);
 
-    renderer.scene_global_data.view_proj = renderer.scene_global_data.proj * renderer.scene_global_data.view;
+    // Compute view & projection matrix
+    renderer.scene_global_data.view = camera.view_mat;
+    renderer.scene_global_data.proj = camera.proj_mat;
+    renderer.scene_global_data.view_proj = camera.view_proj_mat;
 
     spdlog::info("Starting the render loop");
     while(!glfwWindowShouldClose(renderer.gpu_instance.window)) {
