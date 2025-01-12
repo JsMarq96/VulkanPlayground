@@ -2,6 +2,7 @@
 
 #include "../utils.h"
 #include "vk_helpers.h"
+#include "resources.h"
 
 using namespace Render;
 
@@ -134,18 +135,18 @@ void sGraphicsPipelineBuilder::set_cull_mode(const VkCullModeFlags cull_mode, co
     enabled_flags |= CONFIGURED_CULL_MODE;
 }
 
-void sGraphicsPipelineBuilder::add_color_attachment_format(const VkFormat format) {
+void sGraphicsPipelineBuilder::add_color_attachment_format(const eImageFormats format) {
     assert_msg(color_attachment_count < PIPELINE_COLOR_ATTACHMENT_MAX_COUNT, "Too much color attachmetns to pipeline");
-    color_attachments_format[color_attachment_count++] = format;
+    color_attachments_format[color_attachment_count++] = (VkFormat) format;
 }
 
-void sGraphicsPipelineBuilder::set_depth_format(const VkFormat format) {
-    depth_attachment_format = format;
+void sGraphicsPipelineBuilder::set_depth_format(const eImageFormats format) {
+    depth_attachment_format = (VkFormat) format;
     enabled_flags |= CONFIGURED_DEPTH_FORMAT;
 }
 
-void sGraphicsPipelineBuilder::set_stencil_format(const VkFormat format) {
-    stencil_attachment_format = format;
+void sGraphicsPipelineBuilder::set_stencil_format(const eImageFormats format) {
+    stencil_attachment_format = (VkFormat) format;
     enabled_flags |= CONFIGURED_STENCIL_FORMAT;
 }
 

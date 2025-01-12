@@ -134,17 +134,17 @@ namespace Render {
         uint32_t            mesh_count = 0u;
         sGPUMesh            meshes[MAX_MESH_COUNT] = {};
 
-        bool create_swapchain(const uint32_t width, const uint32_t height, const VkFormat format, sSwapchainData &swapchain_data);
+        bool create_swapchain(const uint32_t width, const uint32_t height, const eImageFormats format, sSwapchainData &swapchain_data);
         void destroy_swapchain(sSwapchainData &swapchain_data);
 
-        sImage create_image(const VkFormat img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT, const bool mipmapped = true);
-        sImage create_image(void *raw_img_data, const VkFormat img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, sFrame &frame_to_upload, const bool mipmapped = true, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
+        sImage create_image(const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT, const bool mipmapped = true);
+        sImage create_image(void *raw_img_data, const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, sFrame &frame_to_upload, const bool mipmapped = true, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
         void clean_image(const sImage &image);
 
         sGPUBuffer create_buffer(const size_t buffer_size, const VkBufferUsageFlags usage, const VmaMemoryUsage mem_usage, const bool mapped_on_startup = false);
         void clean_buffer(const sGPUBuffer &buffer);
         void upload_to_gpu(const void* data, const size_t upload_size, sGPUBuffer *dst_buffer, const size_t dst_offset, sFrame &frame_to_upload);
-        void upload_to_gpu(const void* data, const VkExtent3D src_img_size, sImage *dst_buffer, const glm::ivec3 dst_pos, sFrame &frame_to_upload);
+        void upload_to_gpu(const void* data, const eImageFormats tex_format, const VkExtent3D src_img_size, sImage *dst_buffer, const VkExtent3D dst_pos, sFrame &frame_to_upload);
 
         bool create_gpu_mesh(Render::sGPUMesh *new_mesh, const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count, sFrame &frame_to_arrive);
 

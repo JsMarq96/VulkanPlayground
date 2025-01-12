@@ -1,13 +1,14 @@
 #include "renderer.h"
 
 #include <vk_mem_alloc.h>
+#include <glm/gtc/integer.hpp>
 
 #include "../utils.h"
 #include "vk_helpers.h"
 #include "render_utils.h"
 
 // TODO: Delete
-sImage Render::sBackend::create_image(  const VkFormat img_format, 
+sImage Render::sBackend::create_image(  const eImageFormats img_format, 
                                         const VkImageUsageFlags usage,
                                         const VkMemoryPropertyFlags mem_flags,
                                         const VkExtent3D& img_dims, 
@@ -18,7 +19,7 @@ sImage Render::sBackend::create_image(  const VkFormat img_format,
         .format = img_format,
     };
 
-    VkImageCreateInfo img_create_info = VK_Helpers::image2D_create_info(img_format, 
+    VkImageCreateInfo img_create_info = VK_Helpers::image2D_create_info((VkFormat) img_format, 
                                                                         usage, 
                                                                         img_dims);
     if (mipmapped) {
@@ -38,7 +39,7 @@ sImage Render::sBackend::create_image(  const VkFormat img_format,
                                     nullptr),
                     "Error creating image");
     
-    VkImageViewCreateInfo img_view_create_info = VK_Helpers::image_view2D_create_info(  img_format, 
+    VkImageViewCreateInfo img_view_create_info = VK_Helpers::image_view2D_create_info(  (VkFormat) img_format, 
                                                                                         result.image, 
                                                                                         view_flags );
 
@@ -52,7 +53,7 @@ sImage Render::sBackend::create_image(  const VkFormat img_format,
 }
 
 sImage Render::sBackend::create_image(void *raw_img_data,
-                                        const VkFormat img_format, 
+                                        const eImageFormats img_format, 
                                         const VkImageUsageFlags usage, 
                                         const VkMemoryPropertyFlags mem_flags, 
                                         const VkExtent3D& img_dims,
@@ -68,6 +69,7 @@ sImage Render::sBackend::create_image(void *raw_img_data,
                                         mipmapped   );
 
     upload_to_gpu(  raw_img_data, 
+                    img_format,
                     img_dims,
                     &new_image,
                     {0u, 0u, 0u},
@@ -184,13 +186,16 @@ void Render::sBackend::upload_to_gpu(   const void* data,
 }
 
 void Render::sBackend::upload_to_gpu(   const void* data, 
-                                        const glm::ivec3 src_img_size, 
+                                        const eImageFormats tex_format, 
+                                        const VkExtent3D src_img_size, 
                                         sImage *gpu_dst_image, 
-                                        const glm::ivec3 dst_pos, 
+                                        const VkExtent3D dst_pos, 
                                         Render::sFrame &frame_to_upload ) {
     assert_msg( frame_to_upload.staging_buffer_count < MAX_STAGING_BUFFER_COUNT, 
                 "Too many staging buffers in a frame!");
 
+    const uint32_t upload_size = get_pixel_size(tex_format) * src_img_size.width * src_img_size.height * src_img_size.depth;
+    
     uint32_t staging_idx = frame_to_upload.staging_buffer_count++;
     frame_to_upload.staging_buffers[staging_idx] = create_buffer(   upload_size,
                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -208,16 +213,14 @@ void Render::sBackend::upload_to_gpu(   const void* data,
 
     // Add to the list of the resolves, for when whe have the cmd buffer started n running
     frame_to_upload.staging_to_resolve[frame_to_upload.staging_to_resolve_count++] = {
-        .dist_is_image = true,
+        .dst_is_image = true,
         .src_buffer = {
             .raw_buffer = &frame_to_upload.staging_buffers[staging_idx],
             .offset = 0u,
             .size = upload_size
         },
-        .dst_image = {
-            .dst_img = gpu_dst_image,
-            .dst_copy_pos = dst_pos,
-            .img_size = src_img_size
-        }
+        .dst_image = gpu_dst_image,
+        .dst_copy_pos = dst_pos,
+        .img_size = src_img_size
     };
 }

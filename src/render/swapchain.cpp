@@ -8,20 +8,20 @@
 
 bool Render::sBackend::create_swapchain(    const uint32_t width, 
                                             const uint32_t height, 
-                                            const VkFormat format, 
+                                            const eImageFormats format, 
                                             sBackend::sSwapchainData &swapchain_data) {
-    swapchain_data.format = format;
+    swapchain_data.format = (VkFormat) format;
 
-    vkb::SwapchainBuilder swapchain_builder {
+    vkb::SwapchainBuilder swapchain_builder(
         gpu_instance.gpu, 
         gpu_instance.device, 
         gpu_instance.surface
-    };
+    );
 
     vkb::Result<vkb::Swapchain> swapchain_result = swapchain_builder
             .set_desired_format(
                 VkSurfaceFormatKHR{
-                    .format = format,
+                    .format = (VkFormat) format,
                     .colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR 
                 })
             .set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)

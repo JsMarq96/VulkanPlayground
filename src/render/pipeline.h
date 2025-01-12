@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
+#include "resources.h"
 
 #define SHADER_STAGE_COUNT 4u
 #define PIPELINE_COLOR_ATTACHMENT_MAX_COUNT 4u
@@ -59,13 +60,13 @@ namespace Render {
         void set_topology(const VkPrimitiveTopology topology);
         void set_polygon_mode(const VkPolygonMode mode);
         void set_cull_mode(const VkCullModeFlags cull_mode, const VkFrontFace front_face);
-        void set_depth_format(const VkFormat format);
-        void set_stencil_format(const VkFormat format);
+        void set_depth_format(const eImageFormats format);
+        void set_stencil_format(const eImageFormats format);
         void set_depth_test(const bool depth_write_enable, const VkCompareOp op);
         void set_blending_additive();
         void set_blending_alphablend();
 
-        void add_color_attachment_format(const VkFormat format);
+        void add_color_attachment_format(const eImageFormats format);
 
         void disable_depth_test();
         void disable_multisampling();
