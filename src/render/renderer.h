@@ -4,10 +4,11 @@
 #include <vk_mem_alloc.h>
 #include <glm/glm.hpp>
 
-#include "gpu_buffers.h"
-#include "gpu_mesh.h"
-#include "resources.h"
-#include "pipeline.h"
+#include "resources/descriptor_set.h"
+#include "resources/gpu_buffers.h"
+#include "resources/gpu_mesh.h"
+#include "resources/resources.h"
+#include "resources/pipeline.h"
 
 #define FRAME_BUFFER_COUNT 3u
 #define MAX_STAGING_BUFFER_COUNT 30u
@@ -77,27 +78,30 @@ namespace Render {
         VkDescriptorSet         gpu_comon_scene_descriptor_set;
     };
 
-    struct sQueueData {
-        VkQueue                     queue;
-        uint32_t                    family;
-    };
+    
 
     // https://vkguide.dev/docs/new_chapter_4/textures/
     // https://vkguide.dev/docs/new_chapter_3/resizing_window/
     // TODO: window resizing
-   
-    struct sDeviceInstance {
-        GLFWwindow                  *window = nullptr;
-        VkInstance                  instance;
-        VkDebugUtilsMessengerEXT    debug_messenger;
-        VkPhysicalDevice            gpu;
-        VkDevice                    device;
-        VkSurfaceKHR                surface;
-        sQueueData                  graphic_queue;
-    };
 
     struct sBackend {
-        sDeviceInstance         gpu_instance = {};
+
+        struct sDeviceInstance {
+            GLFWwindow                  *window = nullptr;
+
+            VkInstance                  instance;
+
+            VkDebugUtilsMessengerEXT    debug_messenger;
+
+            VkPhysicalDevice            gpu;
+            VkDevice                    device;
+            VkSurfaceKHR                surface;
+
+            struct sQueueData {
+                VkQueue                 queue;
+                uint32_t                family;
+            } graphic_queue;
+        } gpu_instance = {};
 
         VmaAllocator            vk_allocator;
 
@@ -135,7 +139,7 @@ namespace Render {
         sGPUMesh            meshes[MAX_MESH_COUNT] = {};
 
         bool create_swapchain(const uint32_t width, const uint32_t height, const eImageFormats format, sSwapchainData &swapchain_data);
-        void destroy_swapchain(sSwapchainData &swapchain_data);
+        void destroy_swapchain(sBackend::sSwapchainData &swapchain_data);
 
         sImage create_image(const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT, const bool mipmapped = true);
         sImage create_image(void *raw_img_data, const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, sFrame &frame_to_upload, const bool mipmapped = true, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
@@ -143,10 +147,10 @@ namespace Render {
 
         sGPUBuffer create_buffer(const size_t buffer_size, const VkBufferUsageFlags usage, const VmaMemoryUsage mem_usage, const bool mapped_on_startup = false);
         void clean_buffer(const sGPUBuffer &buffer);
-        void upload_to_gpu(const void* data, const size_t upload_size, sGPUBuffer *dst_buffer, const size_t dst_offset, sFrame &frame_to_upload);
-        void upload_to_gpu(const void* data, const eImageFormats tex_format, const VkExtent3D src_img_size, sImage *dst_buffer, const VkExtent3D dst_pos, sFrame &frame_to_upload);
+        void upload_to_gpu(const void* data, const size_t upload_size, sGPUBuffer *dst_buffer, const size_t dst_offset, sFrame *frame_to_upload);
+        void upload_to_gpu(const void* data, const eImageFormats tex_format, const VkExtent3D src_img_size, sImage *dst_buffer, const VkExtent3D dst_pos, sFrame *frame_to_upload);
 
-        bool create_gpu_mesh(Render::sGPUMesh *new_mesh, const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count, sFrame &frame_to_arrive);
+        bool create_gpu_mesh(Render::sGPUMesh *new_mesh, const uint32_t *indices, const uint32_t index_count, const sVertex *vertices, const uint32_t vertex_count, sFrame *frame_to_arrive);
 
         inline sFrame& get_current_frame() { 
             return in_flight_frames[frame_number % FRAME_BUFFER_COUNT]; 

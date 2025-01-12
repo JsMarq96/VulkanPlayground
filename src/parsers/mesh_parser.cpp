@@ -1,6 +1,7 @@
 #include "mesh_parser.h"
 
-#include "../render/mesh.h"
+#include "../render/resources/gpu_mesh.h"
+#include "../render/resources/mesh.h"
 #include "../render/renderer.h"
 
 #include <glm/glm.hpp>
@@ -11,7 +12,11 @@
 const char* get_directory_of_file(const char* file_dir);
 
 // This only loads the meshes, do not care for the scene part of the GLTF
-uint32_t Parsers::gltf_to_mesh(const char* gltf_file_dir, const char* gltf_directory, Render::sGPUMesh meshes_to_fill[100u], Render::sBackend *renderer, Render::sFrame &frame_to_upload) {
+uint32_t Parsers::gltf_to_mesh( const char* gltf_file_dir, 
+                                const char* gltf_directory, 
+                                Render::sGPUMesh meshes_to_fill[100u], 
+                                Render::sBackend *renderer, 
+                                Render::sFrame *frame_to_upload) {
     uint32_t mesh_count = 0u;
 
     fastgltf::GltfDataBuffer data;
@@ -20,7 +25,7 @@ uint32_t Parsers::gltf_to_mesh(const char* gltf_file_dir, const char* gltf_direc
     auto gltf_file = fastgltf::MappedGltfFile::FromPath(gltf_file_dir);
     // ! gltf_file
 
-    auto load_result = parser.loadGltf(gltf_file.get(), gltf_directory, fastgltf::Options::LoadGLBBuffers | fastgltf::Options::LoadExternalBuffers | fastgltf::Options::GenerateMeshIndices);
+    auto load_result = parser.loadGltf(gltf_file.get(), gltf_directory, fastgltf::Options::LoadExternalBuffers | fastgltf::Options::GenerateMeshIndices);
 
     // asset.error() != fastgltf::Error::None
 
@@ -36,10 +41,8 @@ uint32_t Parsers::gltf_to_mesh(const char* gltf_file_dir, const char* gltf_direc
         // Our meshes are the gltf's primitives
         uint32_t mesh_index_count = 0u;
         uint32_t mesh_vertex_count = 0u;
-        uint32_t index_idx = 0u;
-        uint32_t vertex_idx = 0u;
+
         for (auto&& p : mesh.primitives) {
-            const fastgltf::Accessor& index_accessor = (gltf.accessors[0u]);
             mesh_index_count += (uint32_t) (gltf.accessors[p.indicesAccessor.value()].count);
             mesh_vertex_count += (uint32_t) (gltf.accessors[p.findAttribute("POSITION")->accessorIndex].count);
         }

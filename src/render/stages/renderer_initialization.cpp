@@ -9,12 +9,12 @@
 #include "../../parsers/mesh_parser.h"
 #include "../../common.h"
 #include "../vk_helpers.h"
-#include "../descriptor_set.h"
-#include "../pipeline.h"
-#include "../gpu_buffers.h"
+#include "../resources/descriptor_set.h"
+#include "../resources/pipeline.h"
+#include "../resources/gpu_buffers.h"
 
-bool initialize_window(Render::sDeviceInstance &instance);
-bool initialize_vulkan(Render::sDeviceInstance &instance);
+bool initialize_window(Render::sBackend::sDeviceInstance &instance);
+bool initialize_vulkan(Render::sBackend::sDeviceInstance &instance);
 bool initialize_swapchain(Render::sBackend &instance);
 bool initialize_command_buffers(Render::sBackend &instance);
 bool initialize_sync_structs(Render::sBackend &instance);
@@ -41,7 +41,7 @@ bool Render::sBackend::init() {
     return is_initialized;
 }
 
-bool initialize_window(Render::sDeviceInstance &instance) {
+bool initialize_window(Render::sBackend::sDeviceInstance &instance) {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -50,7 +50,7 @@ bool initialize_window(Render::sDeviceInstance &instance) {
     return !instance.window;
 }
 
-bool initialize_vulkan(Render::sDeviceInstance &instance) {
+bool initialize_vulkan(Render::sBackend::sDeviceInstance &instance) {
     vkb::InstanceBuilder builder;
 
     // Create instance
@@ -168,7 +168,7 @@ bool initialize_swapchain(Render::sBackend &instance) {
                                                     draw_image_extent   );
     
     // Depth buffer
-    VkImageUsageFlags depth_uses = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    //VkImageUsageFlags depth_uses = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
     instance.depth_image = instance.create_image(   IMG_FORMAT_D_32BIT_SFLOAT, 
                                                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
@@ -502,7 +502,7 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
 }
 
 bool initialize_mesh_pipelines(Render::sBackend &instance) {
-    instance.mesh_count = Parsers::gltf_to_mesh("../resources/test_meshes.glb", "../resources/", instance.meshes, &instance, instance.get_current_frame());
+    instance.mesh_count = Parsers::gltf_to_mesh("../resources/test_meshes.glb", "../resources/", instance.meshes, &instance, &instance.get_current_frame());
 
     // TODO: deletion of the mesh
     return true;

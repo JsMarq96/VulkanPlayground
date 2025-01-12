@@ -3,9 +3,9 @@
 #include <cstdint>
 
 #include "utils/arena_list.h"
-#include "render/gpu_buffers.h"
-#include "render/gpu_mesh.h"
-#include "render/resources.h"
+#include "render/resources/gpu_buffers.h"
+#include "render/resources/gpu_mesh.h"
+#include "render/resources/resources.h"
 
 typedef uint64_t ResourceId_t;
 

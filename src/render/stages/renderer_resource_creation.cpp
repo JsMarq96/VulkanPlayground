@@ -73,7 +73,7 @@ sImage Render::sBackend::create_image(void *raw_img_data,
                     img_dims,
                     &new_image,
                     {0u, 0u, 0u},
-                    frame_to_upload );
+                    &frame_to_upload );
     
     return new_image;
 }
@@ -119,7 +119,7 @@ bool Render::sBackend::create_gpu_mesh( Render::sGPUMesh *new_mesh,
                                         const uint32_t index_count, 
                                         const sVertex *vertices, 
                                         const uint32_t vertex_count,
-                                        sFrame &frame_to_arrive ) {
+                                        sFrame *frame_to_arrive ) {
     const size_t vertex_buffer_size = vertex_count * sizeof(sVertex);
     const size_t index_buffer_size = index_count * sizeof(uint32_t);
 
@@ -151,29 +151,29 @@ void Render::sBackend::upload_to_gpu(   const void* data,
                                         const size_t upload_size, 
                                         sGPUBuffer *gpu_dst_buffer, 
                                         const size_t dst_offset, 
-                                        sFrame &frame_to_upload ) {
-    assert_msg( frame_to_upload.staging_buffer_count < MAX_STAGING_BUFFER_COUNT, 
+                                        sFrame *frame_to_upload ) {
+    assert_msg( frame_to_upload->staging_buffer_count < MAX_STAGING_BUFFER_COUNT, 
                 "Too many staging buffers in a frame!");
 
-    uint32_t staging_idx = frame_to_upload.staging_buffer_count++;
-    frame_to_upload.staging_buffers[staging_idx] = create_buffer(   upload_size,
+    uint32_t staging_idx = frame_to_upload->staging_buffer_count++;
+    frame_to_upload->staging_buffers[staging_idx] = create_buffer(   upload_size,
                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                                     VMA_MEMORY_USAGE_CPU_ONLY,
                                                                     true    );
 
     // Get the mapped address of teh buffer on the CPU
     void* mapped_staging_buffer;
-    vmaMapMemory(vk_allocator, frame_to_upload.staging_buffers[staging_idx].alloc, &mapped_staging_buffer);
+    vmaMapMemory(vk_allocator, frame_to_upload->staging_buffers[staging_idx].alloc, &mapped_staging_buffer);
 
     // Copy the data to the CPU side mapped stating buffer
     memcpy(mapped_staging_buffer, data, upload_size);
 
-    vmaUnmapMemory(vk_allocator, frame_to_upload.staging_buffers[staging_idx].alloc);
+    vmaUnmapMemory(vk_allocator, frame_to_upload->staging_buffers[staging_idx].alloc);
 
     // Add to the list of the resolves, for when whe have the cmd buffer started n running
-    frame_to_upload.staging_to_resolve[frame_to_upload.staging_to_resolve_count++] = {
+    frame_to_upload->staging_to_resolve[frame_to_upload->staging_to_resolve_count++] = {
         .src_buffer = {
-            .raw_buffer = &frame_to_upload.staging_buffers[staging_idx],
+            .raw_buffer = &frame_to_upload->staging_buffers[staging_idx],
             .offset = 0u,
             .size = upload_size
         },
@@ -190,32 +190,32 @@ void Render::sBackend::upload_to_gpu(   const void* data,
                                         const VkExtent3D src_img_size, 
                                         sImage *gpu_dst_image, 
                                         const VkExtent3D dst_pos, 
-                                        Render::sFrame &frame_to_upload ) {
-    assert_msg( frame_to_upload.staging_buffer_count < MAX_STAGING_BUFFER_COUNT, 
+                                        sFrame *frame_to_upload ) {
+    assert_msg( frame_to_upload->staging_buffer_count < MAX_STAGING_BUFFER_COUNT, 
                 "Too many staging buffers in a frame!");
 
     const uint32_t upload_size = get_pixel_size(tex_format) * src_img_size.width * src_img_size.height * src_img_size.depth;
     
-    uint32_t staging_idx = frame_to_upload.staging_buffer_count++;
-    frame_to_upload.staging_buffers[staging_idx] = create_buffer(   upload_size,
+    uint32_t staging_idx = frame_to_upload->staging_buffer_count++;
+    frame_to_upload->staging_buffers[staging_idx] = create_buffer(   upload_size,
                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                                     VMA_MEMORY_USAGE_CPU_ONLY,
                                                                     true    );
 
     // Get the mapped address of teh buffer on the CPU
     void* mapped_staging_buffer;
-    vmaMapMemory(vk_allocator, frame_to_upload.staging_buffers[staging_idx].alloc, &mapped_staging_buffer);
+    vmaMapMemory(vk_allocator, frame_to_upload->staging_buffers[staging_idx].alloc, &mapped_staging_buffer);
 
     // Copy the data to the CPU side mapped stating buffer
     memcpy(mapped_staging_buffer, data, upload_size);
 
-    vmaUnmapMemory(vk_allocator, frame_to_upload.staging_buffers[staging_idx].alloc);
+    vmaUnmapMemory(vk_allocator, frame_to_upload->staging_buffers[staging_idx].alloc);
 
     // Add to the list of the resolves, for when whe have the cmd buffer started n running
-    frame_to_upload.staging_to_resolve[frame_to_upload.staging_to_resolve_count++] = {
+    frame_to_upload->staging_to_resolve[frame_to_upload->staging_to_resolve_count++] = {
         .dst_is_image = true,
         .src_buffer = {
-            .raw_buffer = &frame_to_upload.staging_buffers[staging_idx],
+            .raw_buffer = &frame_to_upload->staging_buffers[staging_idx],
             .offset = 0u,
             .size = upload_size
         },

@@ -32,7 +32,7 @@ void Render::sBackend::start_frame_capture() {
                                                                 swapchain_data.swapchain, 
                                                                 VK_TIMEOUT, 
                                                                 current_frame.swapchain_semaphore, 
-                                                                nullptr, 
+                                                                NULL, 
                                                                 &current_frame.current_swapchain_index);
     if (swapchain_adquire_result == VK_ERROR_OUT_OF_DATE_KHR) {
         // Recreate swapchain
@@ -53,7 +53,7 @@ void Render::sBackend::start_frame_capture() {
                     sizeof(sGPUSceneGlobalData), 
                     &current_frame.gpu_comon_scene_data_buffer, 
                     0u, 
-                    current_frame);
+                    &current_frame);
 
     vk_assert_msg(  vkBeginCommandBuffer(current_frame.cmd_buffer, &cmd_begin), 
                     "Error initializing the command buffer");

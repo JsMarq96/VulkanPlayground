@@ -5,7 +5,7 @@
 #include <glm/gtx/transform.hpp>
 
 #include "../vk_helpers.h"
-#include "../gpu_mesh.h"
+#include "../resources/gpu_mesh.h"
 
 void clear_screen(Render::sBackend &renderer);
 void render_background(Render::sBackend &renderer);

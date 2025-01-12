@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <vk_mem_alloc.h>
-#include "resources.h"
+
+#include "image_formats.h"
 
 #define SHADER_STAGE_COUNT 4u
 #define PIPELINE_COLOR_ATTACHMENT_MAX_COUNT 4u

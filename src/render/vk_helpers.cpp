@@ -1,5 +1,8 @@
 #include "vk_helpers.h"
 
+#include <spdlog/spdlog.h>
+#include <cstdlib>
+
 #include "render_utils.h"
 #include "../utils.h"
 
@@ -238,7 +241,7 @@ bool VK_Helpers::load_shader_module(    const char* dir,
                                         VkShaderModule *result  ) {
     char* raw_shader = nullptr;
 
-    const uint64_t file_size = bin_file_open(dir, &raw_shader);
+    const size_t file_size = bin_file_open(dir, &raw_shader);
 
     VkShaderModuleCreateInfo create_info = {
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -281,7 +284,7 @@ VkRenderingAttachmentInfo VK_Helpers::attachment_info(  const VkImageView view,
         .imageView = view,
         .imageLayout = layout,
         .resolveMode = (VkResolveModeFlagBits) 0u,
-        .resolveImageView = nullptr,
+        //.resolveImageView = nullptr,
         .loadOp = (clear) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
         .storeOp = VK_ATTACHMENT_STORE_OP_STORE
     };

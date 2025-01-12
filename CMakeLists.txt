@@ -4,6 +4,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_PARALLEL_LEVEL 6)
 set(CMAKE_CXX_STANDARD 23)
 
+option(CLANG_TIME_TRACE "Enable clang profiling." ON)
+
 project(VulkanPlayground)
 
 set(SRC_FILE_DIR "src/")
@@ -24,7 +26,12 @@ ADD_SOURCE("src/")
 ADD_SOURCE("src/parsers")
 ADD_SOURCE("src/render")
 ADD_SOURCE("src/render/stages")
+ADD_SOURCE("src/render/resources")
 ADD_SOURCE("src/utils")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CLANG_TIME_TRACE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftime-trace")
+endif()
 
 # ImGUI
 include_directories(libraries/imgui/)
