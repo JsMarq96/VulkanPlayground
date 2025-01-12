@@ -1,12 +1,12 @@
-#include "renderer.h"
+#include "../renderer.h"
 
 #include <VkBootstrap.h>
 #include <spdlog/spdlog.h>
 #include <stdint.h>
 
-#include "../utils.h"
-#include "render_utils.h"
-#include "vk_helpers.h"
+#include "../../utils.h"
+#include "../render_utils.h"
+#include "../vk_helpers.h"
 
 #define VK_TIMEOUT 10000000u
 

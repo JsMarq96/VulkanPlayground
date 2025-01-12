@@ -6,13 +6,25 @@ set(CMAKE_CXX_STANDARD 23)
 
 project(VulkanPlayground)
 
-file(GLOB H_SOURCES "src/*.h")
-file(GLOB CPP_SOURCES "src/*.cpp")
-file(GLOB C_SOURCES "src/*.c")
-file(GLOB SUBFOLDER_H_SOURCES "src/*/*.h")
-file(GLOB SUBFOLDER_CPP_SOURCES "src/*/*.cpp")
-file(GLOB SUBFOLDER_C_SOURCES "src/*/*.c")
+set(SRC_FILE_DIR "src/")
+
+macro(ADD_SOURCE)
+	file(GLOB H_FILES_APPEND "${ARGV0}/*.h")
+	file(GLOB CPP_FILES_APPEND "${ARGV0}/*.cpp")
+	file(GLOB C_FILES_APPEND "${ARGV0}/*.c")
+
+	list(APPEND HEADER_FILES ${H_FILES_APPEND})
+	list(APPEND SOURCE_FILES ${CPP_FILES_APPEND})
+	list(APPEND SOURCE_FILES ${C_FILES_APPEND})
+endmacro()
+
 file(GLOB RAW_SHADERS "shaders/*.vert" "shaders/*.frag" "shaders/*.comp")
+
+ADD_SOURCE("src/")
+ADD_SOURCE("src/parsers")
+ADD_SOURCE("src/render")
+ADD_SOURCE("src/render/stages")
+ADD_SOURCE("src/utils")
 
 # ImGUI
 include_directories(libraries/imgui/)
@@ -21,7 +33,7 @@ set(IMGUI_IMPL_SRC libraries/imgui/backends/imgui_impl_glfw.cpp
                    libraries/imgui/backends/imgui_impl_opengl3.cpp)
 file(GLOB IMGUI_SRC "libraries/imgui/*.cpp")
 
-add_executable(VulkanPlayground ${IMGUI_IMPL_SRC} ${IMGUI_SRC} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCES} ${SUBFOLDER_H_SOURCES} ${SUBFOLDER_C_SOURCES} ${SUBFOLDER_CPP_SOURCES})
+add_executable(VulkanPlayground ${IMGUI_IMPL_SRC} ${IMGUI_SRC} ${HEADER_FILES} ${SOURCE_FILES})
 set_target_properties(VulkanPlayground PROPERTIES OUTPUT_NAME "VulkanPlayground")
 
 # Shader compiling
@@ -65,7 +77,7 @@ include_directories(libraries/stb)
 
 target_link_libraries(VulkanPlayground glm fastgltf glfw vk-bootstrap spdlog::spdlog GPUOpen::VulkanMemoryAllocator ${Vulkan_LIBRARIES})
 
-include_directories(${Vulkan_INCLUDE_DIR} ${C_SOURCES} ${CPP_SOURCES} ${H_SOURCES} ${SUBFOLDER_H_SOURCES} ${SUBFOLDER_C_SOURCES} ${SUBFOLDER_CPP_SOURCES})
+include_directories(${Vulkan_INCLUDE_DIR} ${HEADER_FILES} ${SOURCE_FILES})
 
 # Custom commands
 

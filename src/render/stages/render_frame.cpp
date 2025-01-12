@@ -1,11 +1,11 @@
-#include "renderer.h"
+#include "../renderer.h"
 
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
-#include "vk_helpers.h"
-#include "gpu_mesh.h"
+#include "../vk_helpers.h"
+#include "../gpu_mesh.h"
 
 void clear_screen(Render::sBackend &renderer);
 void render_background(Render::sBackend &renderer);

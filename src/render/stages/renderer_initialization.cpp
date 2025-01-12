@@ -1,4 +1,4 @@
-#include "renderer.h"
+#include "../renderer.h"
 
 #include <spdlog/spdlog.h>
 #include <GLFW/glfw3.h>
@@ -6,12 +6,12 @@
 #include <vk_mem_alloc.h>
 #include <VkBootstrap.h>
 
-#include "../parsers/mesh_parser.h"
-#include "../common.h"
-#include "vk_helpers.h"
-#include "descriptor_set.h"
-#include "pipeline.h"
-#include "gpu_buffers.h"
+#include "../../parsers/mesh_parser.h"
+#include "../../common.h"
+#include "../vk_helpers.h"
+#include "../descriptor_set.h"
+#include "../pipeline.h"
+#include "../gpu_buffers.h"
 
 bool initialize_window(Render::sDeviceInstance &instance);
 bool initialize_vulkan(Render::sDeviceInstance &instance);
