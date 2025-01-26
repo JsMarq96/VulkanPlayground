@@ -23,6 +23,7 @@ bool initialize_descriptors(Render::sBackend &instance);
 bool initialize_mesh_pipelines(Render::sBackend &instance);
 bool initialize_compute_pipelines(Render::sBackend &instance);
 bool initialize_graphics_pipelines(Render::sBackend &instance);
+bool initialize_img_uploads(Render::sBackend &instance);
 
 bool Render::sBackend::init() {
     bool is_initialized = true;
@@ -35,9 +36,10 @@ bool Render::sBackend::init() {
     is_initialized &= initialize_swapchain(*this);
     is_initialized &= initialize_descriptors(*this);
     is_initialized &= initialize_mesh_pipelines(*this);
+    is_initialized &= initialize_img_uploads(*this);
     is_initialized &= initialize_compute_pipelines(*this);
     is_initialized &= initialize_graphics_pipelines(*this);
-    
+
     return is_initialized;
 }
 
@@ -357,8 +359,6 @@ bool initialize_descriptors(Render::sBackend &instance) {
     return true;
 }
 
-
-
 bool initialize_compute_pipelines(Render::sBackend &instance) {
     VkPushConstantRange push_constant = {
         .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
@@ -426,7 +426,6 @@ bool initialize_compute_pipelines(Render::sBackend &instance) {
 
     return true;
 }
-
 
 bool initialize_graphics_pipelines(Render::sBackend &instance) {
     VkDevice device = instance.gpu_instance.device;
@@ -496,6 +495,51 @@ bool initialize_graphics_pipelines(Render::sBackend &instance) {
     {
         vkDestroyShaderModule(device, triangle_vertex_shader, nullptr);
         vkDestroyShaderModule(device, triangle_frag_shader, nullptr);
+    }
+
+    return true;
+}
+
+bool initialize_img_uploads(Render::sBackend &instance) {
+    // Create checkerboard texture
+    {
+        const uint32_t color_black_packed = glm::packUnorm4x8(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        const uint32_t color_magenta_packed = glm::packUnorm4x8(glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+
+        uint32_t pixels[16u * 16u];
+        for(uint8_t i = 0u; i < 16u; i++) {
+            for(uint8_t j = 0u; j < 16u; j++) {
+                pixels[i * 16u + j] = ((i % 2u) ^ (j % 2)) ? color_magenta_packed : color_black_packed;
+            }
+        }
+
+         instance.create_image( &instance.checkerboard_texture, (void*) pixels, 
+                                                                IMG_FORMAT_RGBA_8BIT_UNORM, 
+                                                                VK_IMAGE_USAGE_SAMPLED_BIT,
+                                                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                                                VkExtent3D{16u, 16u, 1u},
+                                                                instance.get_current_frame());
+    }
+
+    // Create linear & neares samplers
+    {
+        VkSamplerCreateInfo sampler_create_info = {
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .pNext = nullptr,
+            .magFilter = VK_FILTER_NEAREST,
+            .minFilter = VK_FILTER_NEAREST,
+        };
+
+        vkCreateSampler(instance.gpu_instance.device, &sampler_create_info, nullptr, &instance.nearest_sampler);
+
+        sampler_create_info = {
+            .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .pNext = nullptr,
+            .magFilter = VK_FILTER_LINEAR,
+            .minFilter = VK_FILTER_LINEAR,
+        };
+
+        vkCreateSampler(instance.gpu_instance.device, &sampler_create_info, nullptr, &instance.filter_sampler);
     }
 
     return true;

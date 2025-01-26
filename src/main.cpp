@@ -24,7 +24,8 @@ int main() {
     spdlog::info("Initalizing render");
 
     Render::sBackend renderer;
-    bool success = renderer.init();
+    //bool success = 
+    renderer.init();
 
     sCamera camera = {};
     camera.config_view(glm::vec3(6.0f, 0.0f, 6.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));

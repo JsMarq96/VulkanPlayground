@@ -10,6 +10,7 @@ inline size_t get_pixel_size(const eImageFormats format) {
     switch (format) {
         case IMG_FORMAT_BRGA_8BIT_UNORM:
         case IMG_FORMAT_RGBA_8BIT_UINT:
+        case IMG_FORMAT_RGBA_8BIT_UNORM:
             return sizeof(uint8_t) * 4u;
             break;
         case IMG_FORMAT_RGB_8BIT_UINT:
@@ -32,6 +33,7 @@ inline size_t get_pixel_size(const eImageFormats format) {
             return sizeof(uint32_t) * 4u;
             break;
         default:
+            assert(false && "Pixel format undeclared");
             return 0u;
     }
 };

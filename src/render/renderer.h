@@ -138,11 +138,17 @@ namespace Render {
         uint32_t            mesh_count = 0u;
         sGPUMesh            meshes[MAX_MESH_COUNT] = {};
 
+        // Scene textures
+        VkSampler           nearest_sampler;
+        VkSampler           filter_sampler;
+
+        sImage              checkerboard_texture = { };
+
         bool create_swapchain(const uint32_t width, const uint32_t height, const eImageFormats format, sSwapchainData &swapchain_data);
         void destroy_swapchain(sBackend::sSwapchainData &swapchain_data);
 
         sImage create_image(const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT, const bool mipmapped = true);
-        sImage create_image(void *raw_img_data, const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, sFrame &frame_to_upload, const bool mipmapped = true, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
+        void create_image(sImage *new_img, void *raw_img_data, const eImageFormats img_format, const VkImageUsageFlags usage, const VkMemoryPropertyFlags mem_flags, const VkExtent3D& img_dims, sFrame &frame_to_upload, const bool mipmapped = true, const VkImageAspectFlagBits view_flags = VK_IMAGE_ASPECT_COLOR_BIT);
         void clean_image(const sImage &image);
 
         sGPUBuffer create_buffer(const size_t buffer_size, const VkBufferUsageFlags usage, const VmaMemoryUsage mem_usage, const bool mapped_on_startup = false);

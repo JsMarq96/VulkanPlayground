@@ -52,7 +52,8 @@ sImage Render::sBackend::create_image(  const eImageFormats img_format,
     return result;
 }
 
-sImage Render::sBackend::create_image(void *raw_img_data,
+void    Render::sBackend::create_image( sImage *to_create,
+                                        void *raw_img_data,
                                         const eImageFormats img_format, 
                                         const VkImageUsageFlags usage, 
                                         const VkMemoryPropertyFlags mem_flags, 
@@ -61,7 +62,7 @@ sImage Render::sBackend::create_image(void *raw_img_data,
                                         const bool mipmapped,
                                         const VkImageAspectFlagBits view_flags) {
 
-    sImage new_image = create_image(    img_format, 
+    *to_create = create_image(    img_format, 
                                         usage, 
                                         mem_flags, 
                                         img_dims, 
@@ -71,11 +72,9 @@ sImage Render::sBackend::create_image(void *raw_img_data,
     upload_to_gpu(  raw_img_data, 
                     img_format,
                     img_dims,
-                    &new_image,
+                    to_create,
                     {0u, 0u, 0u},
                     &frame_to_upload );
-    
-    return new_image;
 }
 
 
@@ -99,7 +98,7 @@ Render::sGPUBuffer Render::sBackend::create_buffer( const size_t buffer_size,
 
     new_buffer.size = buffer_size;
 
-    vk_assert_msg(  vmaCreateBuffer(  vk_allocator, 
+    vk_assert_msg(  vmaCreateBuffer(vk_allocator, 
                                     &buff_create_info, 
                                     &vma_alloc_info, 
                                     &new_buffer.buffer, 
@@ -156,7 +155,7 @@ void Render::sBackend::upload_to_gpu(   const void* data,
                 "Too many staging buffers in a frame!");
 
     uint32_t staging_idx = frame_to_upload->staging_buffer_count++;
-    frame_to_upload->staging_buffers[staging_idx] = create_buffer(   upload_size,
+    frame_to_upload->staging_buffers[staging_idx] = create_buffer(  upload_size,
                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                                     VMA_MEMORY_USAGE_CPU_ONLY,
                                                                     true    );
@@ -197,7 +196,7 @@ void Render::sBackend::upload_to_gpu(   const void* data,
     const uint32_t upload_size = get_pixel_size(tex_format) * src_img_size.width * src_img_size.height * src_img_size.depth;
     
     uint32_t staging_idx = frame_to_upload->staging_buffer_count++;
-    frame_to_upload->staging_buffers[staging_idx] = create_buffer(   upload_size,
+    frame_to_upload->staging_buffers[staging_idx] = create_buffer(  upload_size,
                                                                     VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                                     VMA_MEMORY_USAGE_CPU_ONLY,
                                                                     true    );
