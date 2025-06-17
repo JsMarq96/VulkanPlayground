@@ -6,6 +6,8 @@
 
 #include "rhi_types.h"
 
+#include "resources/image_formats.h"
+
 namespace Render {
 
 
@@ -41,20 +43,34 @@ namespace Render {
         FRONT_AND_BACK,
         CULL_MODE_COUNT
     };
+
+    #define MAX_COLOR_ATTACHMENT_COUNT 4u
     
     struct sCreateRenderPipeline {
         VkShaderModule vertex_shader;
         VkShaderModule fragment_shader;
-        VkPolygonMode mode;
-        VkPrimitiveTopology topology;
+        VkPolygonMode mode = VK_POLYGON_MODE_FILL;
+        VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         eImageFormats depth_format;
         eImageFormats stencil_format;
-        VkFrontFace front_face;
-        // TODO color attachments
-        // 
+        VkFrontFace front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        uint32_t color_attachment_count = 0u;
+        VkFormat color_attachments_format[MAX_COLOR_ATTACHMENT_COUNT] = {};
     };
 
-    tRenderPipelineId create_render_pipeline(sBackend* backend, const sCreateRenderPipeline &create_info);
+    struct sDepthConfig {
+        bool enable_depth_test = true;
+        bool enable_write_test = true;
+        VkCompareOp compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
+    };
+
+    struct sMultisampleConfig {
+        uint8_t sample_count = 1u;
+        bool enable_min_sample = false;
+        float min_sample = 1.0f;
+    };
+
+    tRenderPipelineId create_render_pipeline(sBackend* backend, const sCreateRenderPipeline &create_info, const sDepthConfig depth, const sMultisampleConfig multisample_config);
 
     void bind_render_pipeline(sBackend* backend, const tRenderPipelineId pipeline_id, const eCullMode cull, const eBlendMode blend);
 
