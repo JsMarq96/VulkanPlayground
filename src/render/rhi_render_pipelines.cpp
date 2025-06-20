@@ -5,13 +5,9 @@
 #define MAX_RENDER_PIPELINE_COUNT 100u
 
 struct Render::sBackend {
-    bool empty_render_pipelines[MAX_RENDER_PIPELINE_COUNT] = {false};
+    bool render_pipeline_is_empty[MAX_RENDER_PIPELINE_COUNT] = {true};
     sRenderPipeline render_pipelines[MAX_RENDER_PIPELINE_COUNT];
 };
-
-VkPipelineColorBlendAttachmentState get_blending_config_additive();
-VkPipelineColorBlendAttachmentState get_blending_config_disable();
-VkPipelineColorBlendAttachmentState get_blending_config_alphablend();
 
 struct sRenderPipeline {
     VkPipeline vk_pipelines[Render::BLEND_MODE_COUNT * Render::CULL_MODE_COUNT];
@@ -22,19 +18,30 @@ struct sRenderPipeline {
     }
 };
 
+// Forward declaration of blending configs
+VkPipelineColorBlendAttachmentState get_blending_config_additive();
+VkPipelineColorBlendAttachmentState get_blending_config_disable();
+VkPipelineColorBlendAttachmentState get_blending_config_alphablend();
+
 Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* backend, 
                                                             const Render::sCreateRenderPipeline &create_info,
-                                                            const sDepthConfig depth = {}, 
-                                                            const sMultisampleConfig multisample_config = {}) {
+                                                            const sRenderPipelineDepthConfig depth = {}, 
+                                                            const sRenderPipelineMultisamplingConfig multisample_config = {}) {
     assert_msg(create_info.color_attachment_count < MAX_COLOR_ATTACHMENT_COUNT, "Too much color attachmetns to pipeline");
 
     uint8_t sample_count = multisample_config.sample_count;
     assert_msg((sample_count == 1u) || (sample_count > 1u && sample_count % 2u && sample_count <= 64u), "Invalid sample count");
 
+    // Pick an empty pipeline from the storage
     uint32_t empty_pipeline_index = 0u;
     for(; empty_pipeline_index < MAX_RENDER_PIPELINE_COUNT; empty_pipeline_index++) {
-        // TODO: continue here
+        if (backend->render_pipeline_is_empty[empty_pipeline_index]) {
+            continue;
+        }
     }
+    assert_msg(empty_pipeline_index == MAX_RENDER_PIPELINE_COUNT, "Render pipelines are full");
+
+    sRenderPipeline* render_pipeline_to_fill = &backend->render_pipelines[empty_pipeline_index];
 
     VkPipelineInputAssemblyStateCreateInfo      input_assembly_state = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -127,6 +134,7 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
         .layout = pipeline_layout
     };
 
+    // Pre-Create pipelines for each blend mode and occlusion mode
     for(uint8_t i = 0u; i < Render::BLEND_MODE_COUNT; i++) {
         switch((Render::eBlendMode) i) {
             case Render::NO_BLEND:
@@ -147,18 +155,17 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
         for(uint8_t j = 0u; j < Render::CULL_MODE_COUNT; j++) {
             rasterization_state.cullMode = j;
 
-            pipeline_manager->render_pipelines.vk_pipelines[(i << Render::CULL_MODE_COUNT) | j]
+            VkPipeline *new_pipeline = &render_pipeline_to_fill->vk_pipelines[(i << Render::CULL_MODE_COUNT) | j];
 
             if (vkCreateGraphicsPipelines(  device, 
                                     VK_NULL_HANDLE, 
                                     1u, 
                                     &pipeline_info, 
                                     nullptr, 
-                                    &new_pipeline) != VK_SUCCESS) {
-        spdlog::error("Error creating the render pipeline");
-
-        return VK_NULL_HANDLE;
-    }
+                                    new_pipeline) != VK_SUCCESS) {
+                // TODO: Assert
+                spdlog::error("Error creating the render pipeline");
+            }
         }
     }
 }

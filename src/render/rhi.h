@@ -58,19 +58,19 @@ namespace Render {
         VkFormat color_attachments_format[MAX_COLOR_ATTACHMENT_COUNT] = {};
     };
 
-    struct sDepthConfig {
+    struct sRenderPipelineDepthConfig {
         bool enable_depth_test = true;
         bool enable_write_test = true;
         VkCompareOp compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
     };
 
-    struct sMultisampleConfig {
+    struct sRenderPipelineMultisamplingConfig {
         uint8_t sample_count = 1u;
         bool enable_min_sample = false;
         float min_sample = 1.0f;
     };
 
-    tRenderPipelineId create_render_pipeline(sBackend* backend, const sCreateRenderPipeline &create_info, const sDepthConfig depth, const sMultisampleConfig multisample_config);
+    tRenderPipelineId create_render_pipeline(sBackend* backend, const sCreateRenderPipeline &create_info, const sRenderPipelineDepthConfig depth, const sRenderPipelineMultisamplingConfig multisample_config);
 
     void bind_render_pipeline(sBackend* backend, const tRenderPipelineId pipeline_id, const eCullMode cull, const eBlendMode blend);
 
