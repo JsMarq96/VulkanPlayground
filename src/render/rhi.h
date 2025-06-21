@@ -45,17 +45,21 @@ namespace Render {
     };
 
     #define MAX_COLOR_ATTACHMENT_COUNT 4u
+    #define SHADER_STAGE_COUNT 4u
+
     
     struct sCreateRenderPipeline {
         VkShaderModule vertex_shader;
         VkShaderModule fragment_shader;
         VkPolygonMode mode = VK_POLYGON_MODE_FILL;
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        eImageFormats depth_format;
-        eImageFormats stencil_format;
+        VkFormat depth_format;
+        VkFormat stencil_format;
         VkFrontFace front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         uint32_t color_attachment_count = 0u;
         VkFormat color_attachments_format[MAX_COLOR_ATTACHMENT_COUNT] = {};
+        uint32_t    view_mask = 0u;
+        VkPipelineLayout pipeline_layout;
     };
 
     struct sRenderPipelineDepthConfig {

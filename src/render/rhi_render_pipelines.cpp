@@ -1,21 +1,26 @@
 #include "rhi.h"
 
 #include <vulkan/vulkan.h>
+#include <spdlog/spdlog.h>
+
+#include "../utils.h"
+#include "vk_helpers.h"
 
 #define MAX_RENDER_PIPELINE_COUNT 100u
 
-struct Render::sBackend {
-    bool render_pipeline_is_empty[MAX_RENDER_PIPELINE_COUNT] = {true};
-    sRenderPipeline render_pipelines[MAX_RENDER_PIPELINE_COUNT];
-};
-
 struct sRenderPipeline {
-    VkPipeline vk_pipelines[Render::BLEND_MODE_COUNT * Render::CULL_MODE_COUNT];
+    VkPipeline vk_pipelines[Render::BLEND_MODE_COUNT * Render::CULL_MODE_COUNT] = {};
 
     VkPipeline fetch_vulkan_pipeline(   const Render::eBlendMode mode, 
                                         const Render::eCullMode cull) {
         return vk_pipelines[(mode << Render::CULL_MODE_COUNT) | cull];
     }
+};
+
+struct Render::sBackend {
+    VkDevice device;
+    bool render_pipeline_is_empty[MAX_RENDER_PIPELINE_COUNT] = {true};
+    sRenderPipeline render_pipelines[MAX_RENDER_PIPELINE_COUNT] = {};
 };
 
 // Forward declaration of blending configs
@@ -116,12 +121,35 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
         .blendConstants = {0.0f, 0.0f, 0.0f, 0.0f}
     };
 
+    VkPipelineRenderingCreateInfo render_info = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+        .pNext = nullptr,
+        .viewMask = create_info.view_mask,
+        .colorAttachmentCount = create_info.color_attachment_count,
+        .pColorAttachmentFormats = create_info.color_attachments_format,
+        .depthAttachmentFormat = create_info.depth_format,
+        .stencilAttachmentFormat = create_info.stencil_format
+    };
+
+    VkPipelineVertexInputStateCreateInfo vertex_input_state = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0u,
+        .vertexBindingDescriptionCount = 0u,
+        .pVertexBindingDescriptions = nullptr,
+        .vertexAttributeDescriptionCount = 0u,
+        .pVertexAttributeDescriptions = nullptr
+    };
+
+    VkPipelineShaderStageCreateInfo shader_stages[SHADER_STAGE_COUNT];
+    shader_stages[0u] = VK_Helpers::shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, create_info.vertex_shader);
+    shader_stages[1u] = VK_Helpers::shader_stage_create_info(VK_SHADER_STAGE_FRAGMENT_BIT, create_info.fragment_shader);
 
     VkGraphicsPipelineCreateInfo pipeline_info = {
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .pNext = &render_info, // Why here??
         .flags = 0u,
-        .stageCount = shader_stages_count,
+        .stageCount = 2u,
         .pStages = shader_stages,
         .pVertexInputState = &vertex_input_state,
         .pInputAssemblyState = &input_assembly_state,
@@ -131,7 +159,7 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
         .pDepthStencilState = &depth_stencil_state,
         .pColorBlendState = &color_blend_state,
         .pDynamicState = &dynamic_info,
-        .layout = pipeline_layout
+        .layout = create_info.pipeline_layout
     };
 
     // Pre-Create pipelines for each blend mode and occlusion mode
@@ -148,6 +176,7 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
             break;
             default:
                 // ASSERT
+                break;
         }
 
         color_blend_state.pAttachments = &blend_state;
@@ -157,17 +186,19 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
 
             VkPipeline *new_pipeline = &render_pipeline_to_fill->vk_pipelines[(i << Render::CULL_MODE_COUNT) | j];
 
-            if (vkCreateGraphicsPipelines(  device, 
-                                    VK_NULL_HANDLE, 
-                                    1u, 
-                                    &pipeline_info, 
-                                    nullptr, 
-                                    new_pipeline) != VK_SUCCESS) {
+            if (vkCreateGraphicsPipelines(  backend->device, 
+                                            VK_NULL_HANDLE, 
+                                            1u, 
+                                            &pipeline_info, 
+                                            nullptr, 
+                                            new_pipeline) != VK_SUCCESS) {
                 // TODO: Assert
                 spdlog::error("Error creating the render pipeline");
             }
         }
     }
+
+    return empty_pipeline_index;
 }
 
 
