@@ -1,14 +1,15 @@
 #include "rhi.h"
 
+#include <stdlib.h>
 #include <vulkan/vulkan.h>
 #include <spdlog/spdlog.h>
+
+#include "rhi_backend.h"
 
 #include "../utils.h"
 #include "vk_helpers.h"
 
-#define MAX_RENDER_PIPELINE_COUNT 100u
-
-struct sRenderPipeline {
+struct Render::sRenderPipeline {
     VkPipeline vk_pipelines[Render::BLEND_MODE_COUNT * Render::CULL_MODE_COUNT] = {};
 
     VkPipeline fetch_vulkan_pipeline(   const Render::eBlendMode mode, 
@@ -17,11 +18,11 @@ struct sRenderPipeline {
     }
 };
 
-struct Render::sBackend {
-    VkDevice device;
-    bool render_pipeline_is_empty[MAX_RENDER_PIPELINE_COUNT] = {true};
-    sRenderPipeline render_pipelines[MAX_RENDER_PIPELINE_COUNT] = {};
-};
+
+void Render::init_render_pipelines(sBackend *render_backend) {
+    render_backend->render_pipelines = (sRenderPipeline*) malloc(sizeof(sRenderPipeline) * MAX_RENDER_PIPELINE_COUNT);
+}
+
 
 // Forward declaration of blending configs
 VkPipelineColorBlendAttachmentState get_blending_config_additive();
@@ -186,7 +187,7 @@ Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* ba
 
             VkPipeline *new_pipeline = &render_pipeline_to_fill->vk_pipelines[(i << Render::CULL_MODE_COUNT) | j];
 
-            if (vkCreateGraphicsPipelines(  backend->device, 
+            if (vkCreateGraphicsPipelines(  (VkDevice) backend->device, 
                                             VK_NULL_HANDLE, 
                                             1u, 
                                             &pipeline_info, 

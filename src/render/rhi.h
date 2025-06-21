@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <vulkan/vulkan.h>
-#include <cstdarg>
 
 #include "rhi_types.h"
 
@@ -13,20 +12,46 @@ namespace Render {
 
     struct sBackend;
 
+    sBackend* create_render_backend(const uint64_t gpu_device);
+
     // Descriptor sets =======================
+    #define MAX_DESCRIPTOR_COUNT 16u
+    #define DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT 100u
+
+    // Ratios from https://github.com/keengames/vulkan_backend/blob/3b0c25c2425a9e2170461211c272b8f56337d2e2/code/vulkan_graphics_objects.cpp#L49
+    struct sDescriptorPoolSizes {
+        uint32_t descriptor_set_count = DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT;
+        uint32_t uniform_buffer_count = DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT * 2u;
+        uint32_t storage_buffer_count = DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT * 2u;
+        uint32_t sampler_count = DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT * 4u;
+        uint32_t sampled_image_count = DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT * 16u;
+        uint32_t storage_image_count = DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT * 4u;
+    };
 
     struct sDescriptorSetBiding {
         uint8_t index = 0u;
         VkDescriptorType type;
     };
 
-    VkDescriptorSetLayout create_descriptor_set_layout(sBackend *backend, const sDescriptorSetBiding bidings...);
-
-    struct sDescriptorLayout {
-        VkDescriptorSetLayout layout;
+    struct sCreateDescriptorSetLayout {
+        VkShaderStageFlags shader_stage = 0u;
+        void* p_next = nullptr;
+        uint32_t create_flags = 0u;
+        uint32_t biding_count = 0u;
+        sDescriptorSetBiding bidings[MAX_DESCRIPTOR_COUNT];
     };
-    void allocate_descriptor_set(sBackend *backend, const VkDescriptorSetLayout &layout);
 
+    VkDescriptorSetLayout create_descriptor_set_layout(sBackend *backend, const sCreateDescriptorSetLayout &create_ds_layout);
+
+    tGPUDescriptorPoolId create_descriptor_pool(sBackend *backend);
+
+    tGPUDescriptorPoolId create_descriptor_pool_with_custom_sizes(sBackend *backend, const sDescriptorPoolSizes pool_sizes);
+
+    void delete_descriptor_pool(sBackend *backend, const tGPUDescriptorPoolId pool_id);
+
+    void clear_descriptor_pool(sBackend *backend, const tGPUDescriptorPoolId pool_id);
+
+    bool alloc_descriptor_set_in_pool(sBackend *backend, const tGPUDescriptorPoolId pool_id, const VkDescriptorSetLayout layout, VkDescriptorSet *result);
 
     // RENDER PIPELINES =======================
     enum eBlendMode : uint32_t {
@@ -75,6 +100,9 @@ namespace Render {
     };
 
     tRenderPipelineId create_render_pipeline(sBackend* backend, const sCreateRenderPipeline &create_info, const sRenderPipelineDepthConfig depth, const sRenderPipelineMultisamplingConfig multisample_config);
+
+
+
 
     void bind_render_pipeline(sBackend* backend, const tRenderPipelineId pipeline_id, const eCullMode cull, const eBlendMode blend);
 
