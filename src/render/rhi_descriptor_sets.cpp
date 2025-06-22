@@ -1,8 +1,11 @@
 #include "rhi.h"
+#include "rhi_backend.h"
 
-#include "vk_helpers.h"
+#include <cstdlib>
+#include <cstring>
 
-#include <cstdarg>
+#include "render_utils.h"
+#include "../utils.h"
 
 #define MAX_DS_POOL_COUNT 20u
 
@@ -30,7 +33,7 @@ VkDescriptorSetLayout Render::create_descriptor_set_layout( Render::sBackend *ba
         };
     }
 
-    vk_assert_msg(  vkCreateDescriptorSetLayout(descriptor_device, 
+    vk_assert_msg(  vkCreateDescriptorSetLayout((VkDevice) backend->device, 
                                                 &info, 
                                                 nullptr, 
                                                 &resulting_set_layout),
@@ -59,8 +62,8 @@ Render::tGPUDescriptorPoolId Render::create_descriptor_pool(sBackend *backend) {
 Render::tGPUDescriptorPoolId Render::create_descriptor_pool_with_custom_sizes(  Render::sBackend *backend, 
                                                                                 const sDescriptorPoolSizes pool_sizes) {
     uint8_t new_pool_idx = 0u;
-    for(;new_pool_idx < MAX_DS_POOL_COUNT; i++) {
-        if (empty_descriptor_pools[new_pool_idx]) {
+    for(;new_pool_idx < MAX_DS_POOL_COUNT; new_pool_idx++) {
+        if (backend->descriptor_set_allocator->empty_descriptor_pools[new_pool_idx]) {
             break;
         }
     }
@@ -99,10 +102,10 @@ Render::tGPUDescriptorPoolId Render::create_descriptor_pool_with_custom_sizes(  
         .pPoolSizes = vk_pool_sizes
     };
 
-    vk_assert_msg(  vkCreateDescriptorPool( device, 
+    vk_assert_msg(  vkCreateDescriptorPool( (VkDevice) backend->device, 
                                             &pool_info, 
                                             nullptr, 
-                                            &descriptor_pools[new_pool_idx]),
+                                            &backend->descriptor_set_allocator->descriptor_pools[new_pool_idx]),
                     "Error creating initial descriptor pool");
     
     return new_pool_idx;
@@ -110,27 +113,28 @@ Render::tGPUDescriptorPoolId Render::create_descriptor_pool_with_custom_sizes(  
     
 void Render::delete_descriptor_pool(Render::sBackend *backend, 
                                     const Render::tGPUDescriptorPoolId pool_id) {
-    if (empty_descriptor_pools[pool_id]) {
+    if (backend->descriptor_set_allocator->empty_descriptor_pools[pool_id]) {
         return;
     }
 
     vkDestroyDescriptorPool((VkDevice) backend->device, 
-                            backend->descriptor_set_allocator, 
+                            backend->descriptor_set_allocator->descriptor_pools[pool_id], 
                             nullptr);
+    backend->descriptor_set_allocator->empty_descriptor_pools[pool_id] = true;
 }
 
 void Render::clear_descriptor_pool( Render::sBackend *backend, 
                                     const Render::tGPUDescriptorPoolId pool_id) {
-    if (empty_descriptor_pools[pool_id]) {
+    if (backend->descriptor_set_allocator->empty_descriptor_pools[pool_id]) {
         return;
     }
 
     vkResetDescriptorPool(  (VkDevice) backend->device,
-                            backend->descriptor_set_allocator, 
+                            backend->descriptor_set_allocator->descriptor_pools[pool_id], 
                             0);
 }
 
-bool Render::alloc_descriptor_set_in_pool(  sRender::Backend *backend, 
+bool Render::alloc_descriptor_set_in_pool(  Render::sBackend *backend, 
                                             const Render::tGPUDescriptorPoolId pool_id, 
                                             const VkDescriptorSetLayout layout,
                                             VkDescriptorSet *result) {
@@ -142,11 +146,11 @@ bool Render::alloc_descriptor_set_in_pool(  sRender::Backend *backend,
         .pSetLayouts = &layout
     };
 
-    VkResult result = vkAllocateDescriptorSets(pool_device, &alloc_info, result);
+    VkResult alloc_result = vkAllocateDescriptorSets((VkDevice) backend->device, &alloc_info, result);
 
-    if (result != VK_ERROR_OUT_OF_POOL_MEMORY && result != VK_ERROR_FRAGMENTED_POO && result != VK_SUCCESS) {
+    if (alloc_result != VK_ERROR_OUT_OF_POOL_MEMORY && alloc_result != VK_ERROR_FRAGMENTED_POOL && alloc_result != VK_SUCCESS) {
         assert_msg(false, "Error allocating descriptors");
     }
 
-    return result != VK_SUCCESS;
+    return alloc_result != VK_SUCCESS;
 }

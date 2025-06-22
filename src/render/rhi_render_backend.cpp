@@ -2,6 +2,7 @@
 #include "rhi_backend.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 Render::sBackend* Render::create_render_backend(const uint64_t gpu_device) {
     sBackend *render_backend = (sBackend*) malloc(sizeof(sBackend));

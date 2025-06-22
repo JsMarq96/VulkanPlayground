@@ -15,7 +15,7 @@ namespace Render {
     sBackend* create_render_backend(const uint64_t gpu_device);
 
     // Descriptor sets =======================
-    #define MAX_DESCRIPTOR_COUNT 16u
+    #define MAX_BIDING_COUNT 16u
     #define DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT 100u
 
     // Ratios from https://github.com/keengames/vulkan_backend/blob/3b0c25c2425a9e2170461211c272b8f56337d2e2/code/vulkan_graphics_objects.cpp#L49
@@ -38,7 +38,7 @@ namespace Render {
         void* p_next = nullptr;
         uint32_t create_flags = 0u;
         uint32_t biding_count = 0u;
-        sDescriptorSetBiding bidings[MAX_DESCRIPTOR_COUNT];
+        sDescriptorSetBiding bidings[MAX_BIDING_COUNT];
     };
 
     VkDescriptorSetLayout create_descriptor_set_layout(sBackend *backend, const sCreateDescriptorSetLayout &create_ds_layout);
