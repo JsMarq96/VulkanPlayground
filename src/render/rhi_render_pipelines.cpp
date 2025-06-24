@@ -18,6 +18,10 @@ struct Render::sRenderPipeline {
     }
 };
 
+// RENDER PIPELINES USE =================================
+
+
+// RENDER PIPELINES CONFIG ==============================
 
 void Render::init_render_pipelines(sBackend *render_backend) {
     render_backend->render_pipelines = (sRenderPipeline*) malloc(sizeof(sRenderPipeline) * MAX_RENDER_PIPELINE_COUNT);
@@ -30,9 +34,9 @@ VkPipelineColorBlendAttachmentState get_blending_config_disable();
 VkPipelineColorBlendAttachmentState get_blending_config_alphablend();
 
 Render::tRenderPipelineId Render::create_render_pipeline(   Render::sBackend* backend, 
-                                                            const Render::sCreateRenderPipeline &create_info,
-                                                            const sRenderPipelineDepthConfig depth = {}, 
-                                                            const sRenderPipelineMultisamplingConfig multisample_config = {}) {
+                                                            const Render::sRenderPipelineParams &create_info,
+                                                            const sRenderPipelineDepthParams depth = {}, 
+                                                            const sRenderPipelineMultisamplingParams multisample_config = {}) {
     assert_msg(create_info.color_attachment_count < MAX_COLOR_ATTACHMENT_COUNT, "Too much color attachmetns to pipeline");
 
     uint8_t sample_count = multisample_config.sample_count;

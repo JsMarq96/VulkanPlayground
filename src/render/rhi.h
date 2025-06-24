@@ -14,7 +14,7 @@ namespace Render {
 
     sBackend* create_render_backend(const uint64_t gpu_device);
 
-    // Descriptor sets =======================
+    // DESCRIPTOR SETS =======================
     #define MAX_BIDING_COUNT 16u
     #define DEFAULT_DESCRIPTOR_SET_PER_POOL_COUNT 100u
 
@@ -33,7 +33,7 @@ namespace Render {
         VkDescriptorType type;
     };
 
-    struct sCreateDescriptorSetLayout {
+    struct sDescriptorSetLayoutParams {
         VkShaderStageFlags shader_stage = 0u;
         void* p_next = nullptr;
         uint32_t create_flags = 0u;
@@ -41,7 +41,7 @@ namespace Render {
         sDescriptorSetBiding bidings[MAX_BIDING_COUNT];
     };
 
-    VkDescriptorSetLayout create_descriptor_set_layout(sBackend *backend, const sCreateDescriptorSetLayout &create_ds_layout);
+    VkDescriptorSetLayout create_descriptor_set_layout(sBackend *backend, const sDescriptorSetLayoutParams &create_ds_layout);
 
     tGPUDescriptorPoolId create_descriptor_pool(sBackend *backend);
 
@@ -73,7 +73,7 @@ namespace Render {
     #define SHADER_STAGE_COUNT 4u
 
     
-    struct sCreateRenderPipeline {
+    struct sRenderPipelineParams {
         VkShaderModule vertex_shader;
         VkShaderModule fragment_shader;
         VkPolygonMode mode = VK_POLYGON_MODE_FILL;
@@ -87,24 +87,40 @@ namespace Render {
         VkPipelineLayout pipeline_layout;
     };
 
-    struct sRenderPipelineDepthConfig {
+    struct sRenderPipelineDepthParams {
         bool enable_depth_test = true;
         bool enable_write_test = true;
         VkCompareOp compare_op = VK_COMPARE_OP_LESS_OR_EQUAL;
     };
 
-    struct sRenderPipelineMultisamplingConfig {
+    struct sRenderPipelineMultisamplingParams {
         uint8_t sample_count = 1u;
         bool enable_min_sample = false;
         float min_sample = 1.0f;
     };
 
-    tRenderPipelineId create_render_pipeline(sBackend* backend, const sCreateRenderPipeline &create_info, const sRenderPipelineDepthConfig depth, const sRenderPipelineMultisamplingConfig multisample_config);
-
-
-
+    tRenderPipelineId create_render_pipeline(sBackend* backend, const sRenderPipelineParams &create_info, const sRenderPipelineDepthParams depth, const sRenderPipelineMultisamplingParams multisample_config);
 
     void bind_render_pipeline(sBackend* backend, const tRenderPipelineId pipeline_id, const eCullMode cull, const eBlendMode blend);
+
+    // SWAPCHAIN ========================================
+
+    struct sSwapchainParams {
+        uint32_t width = 0u;
+        uint32_t height = 0u;
+        VkFormat format;
+        VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+        VkSurfaceKHR surface;
+        VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
+        VkImageUsageFlagBits img_usage_bits = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    };
+
+    struct sSwapchain;
+
+    bool create_swapchain(sBackend* backend, sSwapchainParams &swapchain_params);
+    void delete_swapchain(sBackend* backend);
+
+    VkImage swapchain_adquire_next_img(sBackend* backend);
 
     tGPUBufferId create_gpu_buffer();
 };

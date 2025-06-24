@@ -11,7 +11,7 @@
 
 // LAYOUT DESCRIPTOR BUILDER ===============
 VkDescriptorSetLayout Render::create_descriptor_set_layout( Render::sBackend *backend, 
-                                                            const sCreateDescriptorSetLayout &create_ds_layout) {
+                                                            const sDescriptorSetLayoutParams &create_ds_layout) {
     VkDescriptorSetLayoutBinding descriptor_pairs[MAX_BIDING_COUNT];
 
     VkDescriptorSetLayoutCreateInfo info = {
